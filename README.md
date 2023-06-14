@@ -1,5 +1,3 @@
 # MLFMF
 
-A word or two about double-blind reviewing process.
-
-Link to the actual data.
+Due to the double-blind revision process, we kindly ask the reviewers to follow the link, provided in the submission formular and supplementary materials.
