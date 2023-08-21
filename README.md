@@ -7,6 +7,14 @@ This is the repository that contains all the code that was used to
 
 The data is available at the anonymous link given to the reviewers.
 
+# THe repository structure
+
+- Directory `apaa` (a proof assistant assistant) contains all the sources.
+- Directory `dumps` contains all the results of the experiments.
+- Other python scripts are described below.
+
+
+
 
 # Setting up the environment
 
