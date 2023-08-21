@@ -34,7 +34,7 @@ that contains
 
 Instead of `entries`, 
 
-_Node: abstract syntax trees are guaranteed to be trees only for Agda libraries. In Lean - due to node sharing - they might be directed acyclic graphs (DAGs)._
+_Note: abstract syntax trees are guaranteed to be trees only for Agda libraries. In Lean - due to node sharing - they might be directed acyclic graphs (DAGs)._
 
 ## Network file
 
@@ -93,10 +93,6 @@ since only these are essential to reconstruct the network later. Omitting most o
 of the currently best working `node2vec` model, since it does not use any information from the definitions that are not already
 present in the network.
 
-### Pickled internal format
-
-To skip the conversion step, we provide the pickled internal data format for all the libraries that we used in our experiments.
-(For Lean Mathlib 4, these files contain the optimized versions of definitions.)
 
 ## Running the scripts
 
