@@ -40,7 +40,7 @@ that contains
 - `network.csv` file (which contains the network structure of the library),
 - directory `entries` with many `.dag` files (which contain the abstract syntax trees of the entries in the library).
 
-Instead of `entries`, 
+Instead of `entries`, `entries.zip` may be present. The main script will unzip it automatically˛
 
 _Note: abstract syntax trees are guaranteed to be trees only for Agda libraries. In Lean - due to node sharing - they might be directed acyclic graphs (DAGs)._
 
