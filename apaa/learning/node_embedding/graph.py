@@ -7,15 +7,15 @@ from node2vec import Node2Vec
 from sklearn.feature_extraction.text import TfidfVectorizer
 import os
 from gensim.models import Word2Vec
-from apaa.data.structures.agda_tree import AgdaDefinition
+from apaa.data.structures.agda_tree import agda.Definition
 from apaa.learning.node_embedding.base import NodeEmbeddingBase, Node, array2d
 from apaa.learning.node_embedding.walk_generation import Walker
 
-from apaa.other.helpers import MyTypes, Other
+from apaa.other.helpers import helpers.MyTypes, helpers.Other
 
 
-LOGGER = Other.create_logger(__file__)
-array1d = MyTypes.ARRAY_1D
+LOGGER = helpers.create_logger(__file__)
+array1d = helpers.MyTypes.ARRAY_1D
 
 
 class NodeToVecEmbedding(NodeEmbeddingBase):
@@ -57,7 +57,7 @@ class NodeToVecEmbedding(NodeEmbeddingBase):
     def embed(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, AgdaDefinition],
+        definitions: Dict[Node, agda.Definition],
         **kwargs: Any,
     ) -> Tuple[List[Node], array2d]:
         is_big = len(graph.nodes()) >= 10**5

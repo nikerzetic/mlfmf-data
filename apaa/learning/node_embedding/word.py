@@ -2,16 +2,16 @@ from collections import Counter
 from typing import Any, Dict, List, Tuple, Optional
 import networkx as nx
 import numpy as np
-from apaa.data.structures.agda_tree import AgdaDefinition
+from apaa.data.structures.agda_tree import agda.Definition
 from apaa.learning.node_embedding.base import Node, NodeEmbeddingBase
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from enum import Enum
 
-from apaa.other.helpers import MyTypes
+from apaa.other.helpers import helpers.MyTypes
 
 
-array1d = MyTypes.ARRAY_1D
-array2d = MyTypes.ARRAY_2D
+array1d = helpers.MyTypes.ARRAY_1D
+array2d = helpers.MyTypes.ARRAY_2D
 
 
 class WordEmbedding(NodeEmbeddingBase):
@@ -21,15 +21,15 @@ class WordEmbedding(NodeEmbeddingBase):
     @staticmethod
     def definition_to_document(
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, AgdaDefinition],
-        definition: AgdaDefinition,
+        definitions: Dict[Node, agda.Definition],
+        definition: agda.Definition,
     ) -> str:
         return " ".join(definition.to_words(graph, definitions))
 
     @staticmethod
     def get_embeddings(
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, AgdaDefinition],
+        definitions: Dict[Node, agda.Definition],
         nodes: List[Node],
         vectorizer: CountVectorizer | TfidfVectorizer,
     ) -> array2d:
@@ -53,7 +53,7 @@ class BagOfWordsEmbedder(WordEmbedding):
     def embed(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, AgdaDefinition],
+        definitions: Dict[Node, agda.Definition],
         **kwargs: Any,
     ) -> Tuple[List[Node], array2d]:
         nodes = list(graph.nodes)
@@ -78,7 +78,7 @@ class TFIDFEmbedder(WordEmbedding):
     def embed(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, AgdaDefinition],
+        definitions: Dict[Node, agda.Definition],
         **kwargs: Any,
     ) -> Tuple[List[Node], array2d]:
         nodes = list(graph.nodes)
@@ -154,8 +154,8 @@ class DeepWordEmbedder(WordEmbedding):
     def definition_vector(
         self,
         graph: nx.MultiDiGraph,
-        definitions: dict[Node, AgdaDefinition],
-        definition: AgdaDefinition,
+        definitions: dict[Node, agda.Definition],
+        definition: agda.Definition,
     ):
         word_counts = Counter(definition.to_words(graph, definitions))
         vector = self._get_default_vector()
@@ -168,7 +168,7 @@ class DeepWordEmbedder(WordEmbedding):
     def embed(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, AgdaDefinition],
+        definitions: Dict[Node, agda.Definition],
         **kwargs: Any,
     ) -> Tuple[List[Node], array2d]:
         nodes = list(graph.nodes)

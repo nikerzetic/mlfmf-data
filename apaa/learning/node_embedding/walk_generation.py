@@ -2,9 +2,9 @@ import networkx as nx
 import numpy as np
 import numba
 
-from apaa.other.helpers import Other
+from apaa.other.helpers import helpers.Other
 
-LOGGER = Other.create_logger(__file__)
+LOGGER = helpers.create_logger(__file__)
 
 
 def efficient_transiction_matrix(graph: nx.Graph, weight_key: str = "w"):

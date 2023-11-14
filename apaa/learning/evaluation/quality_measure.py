@@ -1,6 +1,6 @@
-from apaa.other.helpers import EdgeType
-from apaa.other.helpers import Other, MyTypes
-from apaa.data.structures import AgdaDefinition
+from apaa.other.helpers import helpers.EdgeType
+from apaa.other.helpers import helpers.Other, helpers.MyTypes
+from apaa.data.structures import agda.Definition
 
 from typing import Any, List, Tuple, Dict, Union
 import numpy as np
@@ -14,8 +14,8 @@ from sklearn.metrics import (
     roc_auc_score,
 )
 
-LOGGER = Other.create_logger(__file__)
-Node = MyTypes.NODE
+LOGGER = helpers.create_logger(__file__)
+Node = helpers.MyTypes.NODE
 
 
 class QualityMeasureRecommender:
@@ -42,7 +42,7 @@ class QualityMeasureRecommender:
             QualityMeasureRecommender.SMOOTH_RANKS_OF_TRUE: [],
         }
 
-    def update(self, fact: MyTypes.NODE, predictions: List[Tuple[float, MyTypes.NODE]]):
+    def update(self, fact: helpers.MyTypes.NODE, predictions: List[Tuple[float, helpers.MyTypes.NODE]]):
         actual_neighbours, top_neighbours = self._find_actual_neighbours(fact)
         if not actual_neighbours:
             LOGGER.warning(
@@ -83,16 +83,16 @@ class QualityMeasureRecommender:
         self.n_added += 1
         return True, top_neighbours
 
-    def _find_actual_neighbours(self, fact: MyTypes.NODE):
-        actual_neighbours: Dict[MyTypes.NODE, float] = {}
+    def _find_actual_neighbours(self, fact: helpers.MyTypes.NODE):
+        actual_neighbours: Dict[helpers.MyTypes.NODE, float] = {}
         n_top = 20
         top_neighbours = [(0.0, ":)") for _ in range(n_top)]
         n_updates = 0
         if fact not in self.kg:
             raise ValueError(f"Fact {fact} not in the graph: {sorted(self.kg.nodes())}.")
         for node, edges in self.kg[fact].items():
-            if EdgeType.REFERENCE_IN_BODY in edges and AgdaDefinition.is_normal_definition(node):
-                w = edges[EdgeType.REFERENCE_IN_BODY]["w"]
+            if helpers.EdgeType.REFERENCE_IN_BODY in edges and agda.Definition.is_normal_definition(node):
+                w = edges[helpers.EdgeType.REFERENCE_IN_BODY]["w"]
                 actual_neighbours[node] = w
                 if w > top_neighbours[-1][0]:
                     n_updates += 1
@@ -163,7 +163,7 @@ class QualityMeasureRecommender:
         """
         test_graph = nx.MultiDiGraph()
         for u, v, e_type, w in total_graph.edges(keys=True, data="w"):
-            if u not in test_definitions or e_type != EdgeType.REFERENCE_IN_BODY:
+            if u not in test_definitions or e_type != helpers.EdgeType.REFERENCE_IN_BODY:
                 continue
             if not train_graph.has_edge(u, v, e_type):
                 test_graph.add_edge(u, v, e_type, w=w)

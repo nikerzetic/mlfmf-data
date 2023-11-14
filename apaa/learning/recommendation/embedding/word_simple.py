@@ -5,15 +5,15 @@ import networkx as nx
 import numpy as np
 import tqdm
 
-from apaa.data.structures.agda_tree import AgdaDefinition
+from apaa.data.structures.agda_tree import agda.Definition
 from apaa.learning.node_embedding.word import BagOfWordsEmbedder, TFIDFEmbedder
 from apaa.learning.recommendation.base import KNNRecommender, Node
 from apaa.learning.recommendation.embedding.base import KNNNodeEmbeddingRecommender
 from apaa.learning.recommendation.embedding.numba_distance import jaccard
-from apaa.other.helpers import MyTypes
+from apaa.other.helpers import helpers.MyTypes
 
-int_array = MyTypes.INT_ARRAY_1D
-array1d = MyTypes.ARRAY_1D
+int_array = helpers.MyTypes.INT_ARRAY_1D
+array1d = helpers.MyTypes.ARRAY_1D
 
 
 class BagOfWordsRecommender(KNNRecommender):
@@ -25,7 +25,7 @@ class BagOfWordsRecommender(KNNRecommender):
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[MyTypes.NODE, AgdaDefinition],
+        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
         **kwargs: Any,
     ):
         self.initialize_examples_and_distance_matrix(list(graph.nodes))
@@ -54,7 +54,7 @@ class BagOfWordsRecommender(KNNRecommender):
         else:
             print("Warning: distance matrix not initialized")
 
-    def predict_one(self, example: AgdaDefinition) -> List[Tuple[float, Node]]:
+    def predict_one(self, example: agda.Definition) -> List[Tuple[float, Node]]:
         node = example.name
         if node not in self.example_to_i:
             raise ValueError(f"Unknown example {node}")

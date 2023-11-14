@@ -3,11 +3,11 @@ import py2neo as pn
 import contextlib
 import time
 
-from apaa.other.helpers import Other
+import apaa.helpers as helpers
 
 
 ID = "id"
-LOGGER = Other.create_logger(__file__)
+LOGGER = helpers.create_logger(__file__)
 
 
 @contextlib.contextmanager
@@ -16,7 +16,7 @@ def transaction_execution(graph: pn.Graph):
     yield transaction
     graph.commit(transaction)  # type: ignore
 
-
+# MV helpers
 @contextlib.contextmanager
 def timer(name: str):
     t0 = time.time()

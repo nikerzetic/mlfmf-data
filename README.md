@@ -11,7 +11,7 @@ The data is available at the anonymous link given to the reviewers.
 
 - Directory `apaa` (a proof assistant assistant) contains all the sources.
 - Directory `dumps` contains all the results of the experiments.
-- Other python scripts are described below.
+- helpers.Other python scripts are described below.
 
 
 

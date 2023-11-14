@@ -3,25 +3,25 @@ from typing import Literal, Union, List, Dict, Any
 import numpy as np
 import networkx as nx
 
-from apaa.data.structures import AgdaDefinition
+from apaa.data.structures import agda.Definition
 from apaa.learning.recommendation.base import BaseRecommender
-from apaa.other.helpers import Other, MyTypes
+from apaa.other.helpers import helpers.Other, helpers.MyTypes
 
 
-Node = MyTypes.NODE
+Node = helpers.MyTypes.NODE
 
 
 class DummyRecommender(BaseRecommender):
     def __init__(self, k: Literal["all"] | int = 5, random_seed: int = 12345):
         super().__init__("default model", k)
         self.prediction: Node | None = None
-        self.other_train_examples: List[MyTypes.NODE] = []
+        self.other_train_examples: List[helpers.MyTypes.NODE] = []
         self.seed = random_seed
 
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[MyTypes.NODE, AgdaDefinition],
+        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
         **kwargs: Any
     ):
         # find the node with the largest in-degree
@@ -44,12 +44,12 @@ class DummyRecommender(BaseRecommender):
             in_degrees[sink] = weight + in_degrees.get(sink, 0.0)
         return in_degrees
 
-    def predict(self, example_s: Union[AgdaDefinition, List[AgdaDefinition]]):
+    def predict(self, example_s: Union[agda.Definition, List[agda.Definition]]):
         if self.prediction is None:
             raise ValueError("Fit the model first! Most popular node is unknown.")
         return super().predict(example_s)
 
-    def predict_one(self, example: AgdaDefinition):
+    def predict_one(self, example: agda.Definition):
         """
         Similarity with the most popular node is 0.75, and 0.25 otherwise.
 
@@ -65,4 +65,4 @@ class DummyRecommender(BaseRecommender):
 
     @staticmethod
     def load(file: str) -> "DummyRecommender":
-        return Other.class_checker(BaseRecommender.unpickle(file), DummyRecommender)
+        return helpers.Other.class_checker(BaseRecommender.unpickle(file), DummyRecommender)

@@ -1,10 +1,10 @@
 import os
 import numpy as np
-import sys
-from apaa.other.helpers import Embeddings, Other, Locations
+
+import apaa.helpers as helpers
 
 
-LOGGER = Other.create_logger(__file__)
+LOGGER = helpers.create_logger(__file__)
 
 
 ADDITIONAL_TRANSLATIONS = {
@@ -64,13 +64,13 @@ def filter_embeddings(
         library: str, library_word_mappings_file: str,
         filtered_embeddings_file: str
 ):
-    words_library = Embeddings.load_words(Locations.vocabulary_file(library, True), separator="\t")
+    words_library = helpers.Embeddings.load_words(helpers.Locations.vocabulary_file(library, True), separator="\t")
     LOGGER.info(f"Loaded {len(words_library)} words from library")
     additional_words_library = load_translations(library_word_mappings_file)
     words_library += [w for words, _ in additional_words_library.values() for w in words]
     words_library = sorted(set(words_library))
     LOGGER.info(f"Extended to {len(words_library)} words from library")
-    words_all, matrix_all = Embeddings.load_embedding(embedding_file)
+    words_all, matrix_all = helpers.Embeddings.load_embedding(embedding_file)
     LOGGER.info(f"Loaded '{embedding_file}'")
     words_all_indices = {word: i for i, word in enumerate(words_all)}
     chosen_indices = []
@@ -99,17 +99,17 @@ def filter_embeddings(
 
 if __name__ == "__main__":
     do_filtering = True
-    the_embeddings = os.path.join(Locations.EMBEDDINGS_DIR, "pretrained", "crawl-300d-2M-subword.txt")
+    the_embeddings = os.path.join(helpers.Locations.EMBEDDINGS_DIR, "pretrained", "crawl-300d-2M-subword.txt")
     additional_translations = os.path.join(
-        Locations.EMBEDDINGS_DIR,
+        helpers.Locations.EMBEDDINGS_DIR,
         "translations_for_stdlib_in_crawl-300d-2M-subword_words.csv"
     )
     if do_filtering:
         filter_embeddings(
             the_embeddings,
-            Locations.NAME_STDLIB,
+            helpers.Locations.NAME_STDLIB,
             additional_translations,
-            os.path.join(Locations.EMBEDDINGS_DIR, "pretrained", f"{Locations.NAME_STDLIB}_crawl-300d-2M-subword2.txt")
+            os.path.join(helpers.Locations.EMBEDDINGS_DIR, "pretrained", f"{helpers.Locations.NAME_STDLIB}_crawl-300d-2M-subword2.txt")
         )
 
 

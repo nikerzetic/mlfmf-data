@@ -1,10 +1,12 @@
 import networkx as nx
 import pickle
 from typing import Optional, Dict, List, Set, Any
-from apaa.other.helpers import NetworkxWrappers, Other, MyTypes
 
-LOGGER = Other.create_logger(__file__)
-Node = MyTypes.NODE
+import apaa.helpers as helpers
+
+
+LOGGER = helpers.create_logger(__file__)
+Node = helpers.MyTypes.NODE
 
 
 class GraphProperties:
@@ -50,7 +52,7 @@ class GraphProperties:
             for i in range(2):
                 self._node_statistics[f"dummy{i + 1}"] = {
                     node: 0.12345
-                    for node in NetworkxWrappers.graph_nodes(self.graph)
+                    for node in helpers.NetworkxWrappers.graph_nodes(self.graph)
                 }
                 self._graph_statistics[f"g_dummy{i + 1}"] = 3.1415
             return
@@ -77,7 +79,7 @@ class GraphProperties:
     def prepare_measure_dict(
         graph: nx.Graph, default: float = 0.0
     ) -> Dict[Node, float]:
-        return {node: default for node in NetworkxWrappers.graph_nodes(graph)}
+        return {node: default for node in helpers.NetworkxWrappers.graph_nodes(graph)}
 
     def compute_degree_related(self):
         """

@@ -1,23 +1,22 @@
 import random
 import tqdm
 import heapq
-from typing import Tuple, List, Dict, Any, Iterator
+from typing import Tuple, List, Dict, Any
 import networkx as nx
 
-from apaa.data.structures.agda_tree import AgdaDefinition, AgdaNode
-from apaa.other.helpers import EdgeType, NodeType
-from apaa.other.helpers import Other, MyTypes
+import apaa.data.structures.agda as agda
+import apaa.helpers as helpers
 
 
-LOGGER = Other.create_logger(__file__)
-LOGGER_DETAILS = Other.create_logger("details", file="prune_stats.log")
-Node = MyTypes.NODE
+LOGGER = helpers.create_logger(__file__)
+LOGGER_DETAILS = helpers.create_logger("details", file="prune_stats.log")
+Node = helpers.MyTypes.NODE
 
 
 def get_theorems_and_other(
     definition_ids_in_order: list[Node],
-    id_to_definition: dict[Node, AgdaDefinition],
-    theorem_like_tag: NodeType,
+    id_to_definition: dict[Node, agda.Definition],
+    theorem_like_tag: helpers.NodeType,
 ) -> tuple[list[Node], list[Node]]:
     function_indices: list[Node] = []
     other_indices: list[Node] = []
@@ -25,7 +24,7 @@ def get_theorems_and_other(
         definition = id_to_definition[def_id]
         if (
             definition.body.node_type == theorem_like_tag
-            and AgdaDefinition.is_normal_definition(def_id)
+            and agda.Definition.is_normal_definition(def_id)
         ):
             # this is the only thing that can go into test
             function_indices.append(def_id)
@@ -35,11 +34,11 @@ def get_theorems_and_other(
 
 
 def check_validity_of_train_test_entries(
-    id_to_definition: Dict[Node, AgdaDefinition],
+    id_to_definition: Dict[Node, agda.Definition],
     function_ids: list[Node],
     train_entries: list[Node] | None,
     test_entries: list[Node] | None,
-    theorem_like_tag: NodeType,
+    theorem_like_tag: helpers.NodeType,
 ) -> tuple[bool, str]:
     if (train_entries is None) != (test_entries is None):
         raise ValueError("Either both or none of test/train defs must be given.")
@@ -58,7 +57,7 @@ def check_validity_of_train_test_entries(
 
 def prepare_dataset(
     graph: nx.MultiDiGraph,
-    id_to_definition: Dict[Node, AgdaDefinition],
+    id_to_definition: Dict[Node, agda.Definition],
     p_test: float = 0.2,
     p_def_to_keep: float = 0.0,
     seed: int = 123,
@@ -66,10 +65,10 @@ def prepare_dataset(
     test_defs: List[Node] | None = None,
 ) -> Tuple[
     nx.MultiDiGraph,
-    Tuple[Dict[Node, AgdaDefinition], Dict[Node, AgdaDefinition]],
+    Tuple[Dict[Node, agda.Definition], Dict[Node, agda.Definition]],
     Tuple[
-        List[Tuple[Node, Node, EdgeType]],
-        List[Tuple[Node, Node, EdgeType]],
+        List[Tuple[Node, Node, helpers.EdgeType]],
+        List[Tuple[Node, Node, helpers.EdgeType]],
     ],
 ]:
     """
@@ -78,7 +77,7 @@ def prepare_dataset(
     3. Return (modified graph, (train defs, test defs), (positive edges, negative edges))
     """
     random.seed(seed)
-    theorem_like_tag = NodeType.get_theorem_like_tag(graph)
+    theorem_like_tag = helpers.NodeType.get_theorem_like_tag(graph)
     LOGGER.info(f"Theorem-like tag: {theorem_like_tag}")
     definitions_ids = sorted(id_to_definition)
     random.shuffle(definitions_ids)
@@ -125,7 +124,7 @@ def prepare_dataset(
         if appropriate_for_test:
             positive_edges.extend(removed_edges)
             negative_edges.extend(
-                Other.sample_negative_edges(
+                helpers.Other.sample_negative_edges(
                     graph, definitions_ids, def_id, len(removed_edges)
                 )
             )
@@ -137,8 +136,8 @@ def prepare_dataset(
 
 
 def prune_definition(
-    current_graph: nx.MultiDiGraph, definition: AgdaDefinition, p_keep: float
-) -> Tuple[bool, AgdaDefinition, List[Tuple[Node, Node, EdgeType]]]:
+    current_graph: nx.MultiDiGraph, definition: agda.Definition, p_keep: float
+) -> Tuple[bool, agda.Definition, List[Tuple[Node, Node, helpers.EdgeType]]]:
     """
     1) treba je odstraniti povezave, ki predstavljajo približno 1 - p_keep teže
     2) One so posejane malo levo desno po drevesu, zato jih lahko enostavno naključno izberemo
@@ -162,9 +161,9 @@ def prune_definition(
     return did_anything, definition, removed_edges
 
 
-def get_n_children_and_references(definition: AgdaDefinition):
+def get_n_children_and_references(definition: agda.Definition):
     n_children = []  # (n children present, node)
-    referenced_nodes: Dict[Any, List[AgdaNode]] = {}  # reference name: [list of nodes]
+    referenced_nodes: Dict[Any, List[agda.Node]] = {}  # reference name: [list of nodes]
     body_node_iterator = definition.body_nodes
     next(body_node_iterator)  # skip root of the body
     for node in body_node_iterator:
@@ -178,17 +177,17 @@ def get_n_children_and_references(definition: AgdaDefinition):
 
 
 def get_edge_type(reference_name: str):
-    if AgdaDefinition.is_with_definition(reference_name):
-        return EdgeType.REFERENCE_IN_BODY_TO_WITH
-    elif AgdaDefinition.is_rewrite_definition(reference_name):
-        return EdgeType.REFERENCE_IN_BODY_TO_REWRITE
+    if agda.Definition.is_with_definition(reference_name):
+        return helpers.EdgeType.REFERENCE_IN_BODY_TO_WITH
+    elif agda.Definition.is_rewrite_definition(reference_name):
+        return helpers.EdgeType.REFERENCE_IN_BODY_TO_REWRITE
     else:
-        return EdgeType.REFERENCE_IN_BODY
+        return helpers.EdgeType.REFERENCE_IN_BODY
 
 
 def remove_references(
     current_graph, referenced_nodes, p_keep, definition
-) -> list[tuple[Node, Node, EdgeType]]:
+) -> list[tuple[Node, Node, helpers.EdgeType]]:
     referenced_nodes_heap = list(
         (-len(nodes), reference) for reference, nodes in referenced_nodes.items()
     )
@@ -253,7 +252,7 @@ def prune_leaves(n_children, p_keep, definition_name):
         # prune
         parent = node.parent
         assert isinstance(
-            parent, AgdaNode
+            parent, agda.Node
         )  # even the root of the body is not the root of the definition
         new_children = [child for child in parent.children if child is not node]
         parent.children = new_children
@@ -265,17 +264,17 @@ def prune_leaves(n_children, p_keep, definition_name):
 def prepare_internal_cv_dataset(
     train_graph: nx.MultiDiGraph,
     definition_ids: list[Node],
-    train_defs: Dict[Node, AgdaDefinition],
+    train_defs: Dict[Node, agda.Definition],
     i_fold: int,
     n_folds: int,
     p_def_to_keep: float = 0.0,
     seed: int = 123,
 ) -> Tuple[
     nx.MultiDiGraph,
-    Tuple[Dict[Node, AgdaDefinition], Dict[Node, AgdaDefinition]],
+    Tuple[Dict[Node, agda.Definition], Dict[Node, agda.Definition]],
     Tuple[
-        List[Tuple[Node, Node, EdgeType]],
-        List[Tuple[Node, Node, EdgeType]],
+        List[Tuple[Node, Node, helpers.EdgeType]],
+        List[Tuple[Node, Node, helpers.EdgeType]],
     ],
 ]:
     # split the definitions into n_folds parts

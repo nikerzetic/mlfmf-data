@@ -5,31 +5,31 @@ import pickle
 import re
 import os
 
-from apaa.other.helpers import NodeType, Other, Locations, MyTypes, EdgeType
-from .agda_tree import AgdaNode, AgdaDefinition, AgdaDefinitionForest
+import agda
+import apaa.helpers as helpers
 from .graph_properties import GraphProperties
 from .database import DatabaseManipulation
 
 
-Node = MyTypes.NODE
+Node = helpers.MyTypes.NODE
 
-LOGGER = Other.create_logger(__file__)
+LOGGER = helpers.create_logger(__file__)
 
 
 class KnowledgeGraph:
     def __init__(
-        self, library: str, definitions: AgdaDefinitionForest, debug: bool = True
+        self, library: str, definitions: agda.DefinitionForest, debug: bool = True
     ):
         self._library = library
-        self.id_to_definition: Dict[Node, AgdaDefinition] = {}
+        self.id_to_definition: Dict[Node, agda.Definition] = {}
         self._graph: nx.MultiDiGraph = nx.MultiDiGraph()
-        self.definition_types: Set[NodeType] = set()
+        self.definition_types: Set[helpers.NodeType] = set()
         self._init(definitions)
         self._graph_properties: GraphProperties = self._init_graph_properties(debug)
         self._init_meta()
         self._check()
 
-    def _init(self, definitions: AgdaDefinitionForest):
+    def _init(self, definitions: agda.DefinitionForest):
         self._init_graph_nodes(definitions)
         self._init_rest_of_graph(definitions)
         LOGGER.info(
@@ -62,20 +62,20 @@ class KnowledgeGraph:
 
     def _check_weighted_references(self):
         for source, sink, edge_type, params in self.graph.edges(data=True, keys=True):
-            assert isinstance(edge_type, EdgeType)
+            assert isinstance(edge_type, helpers.EdgeType)
             if edge_type.is_reference() and "w" not in params:
                 raise ValueError(
                     f"Edge {source}--{edge_type}-->{sink} has no 'w': {params}"
                 )
 
-    def add_definition(self, definition: AgdaDefinition):
+    def add_definition(self, definition: agda.Definition):
         name = definition.name
         d_type = definition.body.node_type
         if self.should_add_a_new_node(name, d_type, definition):
             self.id_to_definition[name] = definition
             self.add_node_to_graph(name, d_type)
     
-    def should_add_a_new_node(self, name: Node, d_type: NodeType, definition: AgdaDefinition) -> bool:
+    def should_add_a_new_node(self, name: Node, d_type: helpers.NodeType, definition: agda.Definition) -> bool:
         if name not in self.id_to_definition:
             return True
         LOGGER.warning(f"Definition name {definition.name} repeats!")
@@ -88,7 +88,7 @@ class KnowledgeGraph:
             )
         # Let's also test whether this is a constructor
         other_d_type = self.id_to_definition[name].body.node_type
-        if not (d_type == other_d_type == NodeType.CONSTRUCTOR):
+        if not (d_type == other_d_type == helpers.NodeType.CONSTRUCTOR):
             other_module_name = self.id_to_definition[name].module_name
             raise ValueError(
                 f"The new and the present definitions for {definition.module_name}/{other_module_name}: {name} are not both ':constructors': "
@@ -96,7 +96,7 @@ class KnowledgeGraph:
             )
         return False
 
-    def add_node_to_graph(self, name: Node, node_type: NodeType) -> bool:
+    def add_node_to_graph(self, name: Node, node_type: helpers.NodeType) -> bool:
         if name in self.graph.nodes:
             return False
         self.graph.add_node(name, label=node_type)
@@ -107,7 +107,7 @@ class KnowledgeGraph:
         self,
         source: Node,
         sink: Node,
-        edge_type: EdgeType,
+        edge_type: helpers.EdgeType,
         **edge_data: Any,
     ):
         if self.graph.get_edge_data(source, sink, edge_type, default=None) is None:
@@ -125,20 +125,20 @@ class KnowledgeGraph:
                 f"Edge data: {edge_data}"
             )
 
-    def _init_graph_nodes(self, definitions: AgdaDefinitionForest):
+    def _init_graph_nodes(self, definitions: agda.DefinitionForest):
         LOGGER.info(f"Processing {len(definitions)} definition(s)")
         for definition in definitions:
             self.add_definition(definition)
         self._update_with_missing_nodes(definitions)
 
-    def _update_with_missing_nodes(self, definitions: AgdaDefinitionForest):
+    def _update_with_missing_nodes(self, definitions: agda.DefinitionForest):
         missing: Set[Node] = set()
         for definition in tqdm.tqdm(definitions):
-            for node in AgdaDefinition.named_nodes(definition.nodes):
+            for node in agda.Definition.named_nodes(definition.nodes):
                 name = node.name
                 if name not in self.id_to_definition:
                     missing.add(name)
-                    new_definition = AgdaDefinition.dummy_definition(name)
+                    new_definition = agda.Definition.dummy_definition(name)
                     self.add_definition(new_definition)
         if missing:
             LOGGER.warning(
@@ -148,18 +148,18 @@ class KnowledgeGraph:
         else:
             LOGGER.info("No missing definitions found.")
 
-    def _init_rest_of_graph(self, definitions: AgdaDefinitionForest):
+    def _init_rest_of_graph(self, definitions: agda.DefinitionForest):
         with_to_main: Dict[Node, Node] = {}
         rewrite_to_main: Dict[Node, Node] = {}
-        to_from_with_edges: Dict[Node, List[Tuple[Node, EdgeType]]] = {}
-        to_from_rewrite_edges: Dict[Node, List[Tuple[Node, EdgeType]]] = {}
+        to_from_with_edges: Dict[Node, List[Tuple[Node, helpers.EdgeType]]] = {}
+        to_from_rewrite_edges: Dict[Node, List[Tuple[Node, helpers.EdgeType]]] = {}
         for definition in tqdm.tqdm(definitions):
-            assert isinstance(definition, AgdaDefinition)
-            if AgdaDefinition.is_with_definition(definition.name):
+            assert isinstance(definition, agda.Definition)
+            if agda.Definition.is_with_definition(definition.name):
                 KnowledgeGraph._update_main_definition_of_with(
                     definition.name, to_from_with_edges, with_to_main
                 )
-            elif AgdaDefinition.is_rewrite_definition(definition.name):
+            elif agda.Definition.is_rewrite_definition(definition.name):
                 KnowledgeGraph._update_main_definition_of_rewrite(
                     definition.name, to_from_rewrite_edges, rewrite_to_main
                 )
@@ -172,52 +172,52 @@ class KnowledgeGraph:
 
     def _init_edges_of_type(
         self,
-        definition: AgdaDefinition,
-        candidate_nodes: Iterator[AgdaNode],
-        edge_type: EdgeType,
-        to_with_references: Dict[Node, List[Tuple[Node, EdgeType]]],
-        to_rewrite_references: Dict[Node, List[Tuple[Node, EdgeType]]],
+        definition: agda.Definition,
+        candidate_nodes: Iterator[agda.Node],
+        edge_type: helpers.EdgeType,
+        to_with_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
+        to_rewrite_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
     ):
-        references = list(AgdaDefinition.named_nodes(candidate_nodes))
+        references = list(agda.Definition.named_nodes(candidate_nodes))
         self._init_edges(
             definition, references, edge_type, to_with_references, to_rewrite_references
         )
 
     def _init_edges_declaration(
         self,
-        definition: AgdaDefinition,
-        to_with_references: Dict[Node, List[Tuple[Node, EdgeType]]],
-        to_rewrite_references: Dict[Node, List[Tuple[Node, EdgeType]]],
+        definition: agda.Definition,
+        to_with_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
+        to_rewrite_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
     ):
         self._init_edges_of_type(
             definition,
             definition.type_nodes,
-            EdgeType.REFERENCE_IN_TYPE,
+            helpers.EdgeType.REFERENCE_IN_TYPE,
             to_with_references,
             to_rewrite_references,
         )
 
     def _init_edges_body(
         self,
-        definition: AgdaDefinition,
-        to_with_references: Dict[Node, List[Tuple[Node, EdgeType]]],
-        to_rewrite_references: Dict[Node, List[Tuple[Node, EdgeType]]],
+        definition: agda.Definition,
+        to_with_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
+        to_rewrite_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
     ):
         self._init_edges_of_type(
             definition,
             definition.body_nodes,
-            EdgeType.REFERENCE_IN_BODY,
+            helpers.EdgeType.REFERENCE_IN_BODY,
             to_with_references,
             to_rewrite_references,
         )
 
     def _init_edges(
         self,
-        definition: AgdaDefinition,
-        nodes: List[AgdaNode],
-        edge_type: EdgeType,
-        to_with_references: Dict[Node, List[Tuple[Node, EdgeType]]],
-        to_rewrite_references: Dict[Node, List[Tuple[Node, EdgeType]]],
+        definition: agda.Definition,
+        nodes: List[agda.Node],
+        edge_type: helpers.EdgeType,
+        to_with_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
+        to_rewrite_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
     ):
         d_name = definition.name
         edge_type_with = edge_type.normal_to_with()
@@ -229,12 +229,12 @@ class KnowledgeGraph:
                     f"No definition of '{name}' (edge '{d_name}'-->'{name}')"
                 )
             used_edge = edge_type
-            if AgdaDefinition.is_with_definition(name):
+            if agda.Definition.is_with_definition(name):
                 used_edge = edge_type_with
                 KnowledgeGraph._maybe_update_to_with_reference(
                     to_with_references, d_name, name, edge_type_with
                 )
-            elif AgdaDefinition.is_rewrite_definition(name):
+            elif agda.Definition.is_rewrite_definition(name):
                 used_edge = edge_type_rewrite
                 KnowledgeGraph._maybe_update_to_rewrite_reference(
                     to_rewrite_references, d_name, name, edge_type_rewrite
@@ -244,10 +244,10 @@ class KnowledgeGraph:
 
     @staticmethod
     def _maybe_update_to_with_reference(
-        to_with_references: Dict[Node, List[Tuple[Node, EdgeType]]],
+        to_with_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
         d_name: Node,
         name: Node,
-        edge_type_with: EdgeType,
+        edge_type_with: helpers.EdgeType,
     ):
         if d_name == name:
             LOGGER.warning(
@@ -260,10 +260,10 @@ class KnowledgeGraph:
 
     @staticmethod
     def _maybe_update_to_rewrite_reference(
-        to_rewrite_references: Dict[Node, List[Tuple[Node, EdgeType]]],
+        to_rewrite_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
         d_name: Node,
         name: Node,
-        edge_type_rewrite: EdgeType,
+        edge_type_rewrite: helpers.EdgeType,
     ):
         if d_name == name:
             LOGGER.warning(
@@ -281,7 +281,7 @@ class KnowledgeGraph:
     @staticmethod
     def _update_main_definition_of_with(
         d_name: Node,
-        to_with_references: Dict[Node, List[Tuple[Node, EdgeType]]],
+        to_with_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
         with_to_main: Dict[Node, Node],
     ):
         # At least the definition where this "with" is introduced, should already reference d_name
@@ -300,7 +300,7 @@ class KnowledgeGraph:
     def _postprocess_with_nodes(
         self,
         with_to_main: Dict[Node, Node],
-        to_from_with_edges: Dict[Node, List[Tuple[Node, EdgeType]]],
+        to_from_with_edges: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
     ):
         with_to_root = KnowledgeGraph._compute_with_to_root(with_to_main)
         total_weights = self._compute_total_weights_of_with_nodes(
@@ -312,14 +312,14 @@ class KnowledgeGraph:
     def _postprocess_from_with_references(
         self,
         with_to_root: Dict[Node, Node],
-        total_weights: Dict[Node, Dict[EdgeType, int]],
+        total_weights: Dict[Node, Dict[helpers.EdgeType, int]],
     ):
         # "move" references from with
         LOGGER.debug("Postprocess from with")
         for with_node, main_node in with_to_root.items():
             LOGGER.debug(f"  Processing {with_node} (with main {main_node})")
             for ref, edges in self.graph[with_node].items():
-                if AgdaDefinition.is_with_definition(ref):
+                if agda.Definition.is_with_definition(ref):
                     continue
                 main_of_ref = with_to_root.get(ref, ref)
                 total_connection_weight = sum(props["w"] for props in edges.values())
@@ -339,7 +339,7 @@ class KnowledgeGraph:
     def _postprocess_to_with_references(
         self,
         with_to_root: Dict[Node, Node],
-        to_from_with_edges: Dict[Node, List[Tuple[Node, EdgeType]]],
+        to_from_with_edges: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
     ):
         # "move" "true" references to with nodes:
         # - skip with->with, because these were already processed in "from with"
@@ -352,7 +352,7 @@ class KnowledgeGraph:
                 LOGGER.debug(f"  Processing WITH <-- {referencing_node}")
                 this_root = with_to_root[with_node]
                 other_root = with_to_root.get(referencing_node, referencing_node)
-                if this_root == other_root or AgdaDefinition.is_with_definition(
+                if this_root == other_root or agda.Definition.is_with_definition(
                     referencing_node
                 ):
                     continue
@@ -375,15 +375,15 @@ class KnowledgeGraph:
     def _compute_total_weights_of_with_nodes(
         self,
         with_to_root: Dict[Node, Node],
-        to_from_with_edges: Dict[Node, List[Tuple[Node, EdgeType]]],
-    ) -> Dict[Node, Dict[EdgeType, int]]:
+        to_from_with_edges: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
+    ) -> Dict[Node, Dict[helpers.EdgeType, int]]:
         # to_from_with_edges is reversed graph, but with repetitions
         with_graph, reversed_with_graph = KnowledgeGraph._create_with_graph(
             to_from_with_edges
         )
         KnowledgeGraph._cycles(with_graph)
         stack = list(filter(lambda n: not reversed_with_graph[n], reversed_with_graph))
-        total_weights: Dict[Node, Dict[EdgeType, int]] = {}
+        total_weights: Dict[Node, Dict[helpers.EdgeType, int]] = {}
         while stack:
             node = stack.pop()
             parents = reversed_with_graph[node]
@@ -404,13 +404,13 @@ class KnowledgeGraph:
 
     def _compute_total_weights_of_single(
         self,
-        total_weights: Dict[Node, Dict[EdgeType, int]],
+        total_weights: Dict[Node, Dict[helpers.EdgeType, int]],
         with_to_root: Dict[Node, Node],
         node: Node,
-        parents: Dict[Node, Set[EdgeType]],
-    ) -> Dict[EdgeType, int]:
+        parents: Dict[Node, Set[helpers.EdgeType]],
+    ) -> Dict[helpers.EdgeType, int]:
         root = with_to_root[node]
-        ws: Dict[EdgeType, int] = {}
+        ws: Dict[helpers.EdgeType, int] = {}
         for parent, e_types in parents.items():
             if with_to_root.get(parent, parent) != root:
                 # this is some other reference
@@ -432,7 +432,7 @@ class KnowledgeGraph:
         return ws
 
     @staticmethod
-    def _cycles(with_graph: Dict[Node, Dict[Node, Set[EdgeType]]]):
+    def _cycles(with_graph: Dict[Node, Dict[Node, Set[helpers.EdgeType]]]):
         graph: nx.DiGraph = nx.DiGraph()
         for source, sinks in with_graph.items():
             for sink in sinks:
@@ -458,12 +458,12 @@ class KnowledgeGraph:
 
     @staticmethod
     def _create_with_graph(
-        to_from_with_edges: Dict[Node, List[Tuple[Node, EdgeType]]]
+        to_from_with_edges: Dict[Node, List[Tuple[Node, helpers.EdgeType]]]
     ) -> Tuple[
-        Dict[Node, Dict[Node, Set[EdgeType]]], Dict[Node, Dict[Node, Set[EdgeType]]]
+        Dict[Node, Dict[Node, Set[helpers.EdgeType]]], Dict[Node, Dict[Node, Set[helpers.EdgeType]]]
     ]:
-        with_graph: Dict[Node, Dict[Node, Set[EdgeType]]] = {}
-        reversed_with_graph: Dict[Node, Dict[Node, Set[EdgeType]]] = {}
+        with_graph: Dict[Node, Dict[Node, Set[helpers.EdgeType]]] = {}
+        reversed_with_graph: Dict[Node, Dict[Node, Set[helpers.EdgeType]]] = {}
         all_nodes: Set[Node] = set()
         for sink, sources in to_from_with_edges.items():
             all_nodes.add(sink)
@@ -482,10 +482,10 @@ class KnowledgeGraph:
 
     @staticmethod
     def _update_with_graph(
-        with_graph: Dict[Node, Dict[Node, Set[EdgeType]]],
+        with_graph: Dict[Node, Dict[Node, Set[helpers.EdgeType]]],
         source: Node,
         sink: Node,
-        edge_type: EdgeType,
+        edge_type: helpers.EdgeType,
     ):
         if sink not in with_graph[source]:
             with_graph[source][sink] = set()
@@ -500,7 +500,7 @@ class KnowledgeGraph:
         :return:
         """
         for node in self.graph:
-            if not AgdaDefinition.is_rewrite_definition(node):
+            if not agda.Definition.is_rewrite_definition(node):
                 continue
             main = rewrite_to_main[node]
             for reference in self.graph[node]:
@@ -513,7 +513,7 @@ class KnowledgeGraph:
     @staticmethod
     def _update_main_definition_of_rewrite(
         d_name: Node,
-        to_rewrite_references: Dict[Node, List[Tuple[Node, EdgeType]]],
+        to_rewrite_references: Dict[Node, List[Tuple[Node, helpers.EdgeType]]],
         rewrite_to_main: Dict[Node, Node],
     ):
         # At least the definition where this "rewrite" is introduced, should already reference d_name
@@ -535,7 +535,7 @@ class KnowledgeGraph:
         library_node = f"library_{self._library}"
         fake_library_node = "external source"
         module_nodes: Set[Node] = set()
-        self.add_node_to_graph(library_node, NodeType.LIBRARY)
+        self.add_node_to_graph(library_node, helpers.NodeType.LIBRARY)
         for definition in self.id_to_definition.values():
             module_nodes |= self._add_module_chain(
                 definition, library_node, fake_library_node, definition.is_internal
@@ -558,23 +558,23 @@ class KnowledgeGraph:
 
     def _add_module_chain(
         self,
-        definition: AgdaDefinition,
+        definition: agda.Definition,
         library_node: Node,
         fake_library_node: Node,
         is_internal: bool,
     ):
         this = definition.name
         parent = definition.module_name
-        edge_type = EdgeType.DEFINES
+        edge_type = helpers.EdgeType.DEFINES
         module_nodes: Set[Node] = set()
         while True:
             module_nodes.add(parent)
-            module_type = NodeType.MODULE if is_internal else NodeType.EXTERNAL_MODULE
+            module_type = helpers.NodeType.MODULE if is_internal else helpers.NodeType.EXTERNAL_MODULE
             was_added = self.add_node_to_graph(parent, module_type)
             self.graph.add_edge(parent, this, edge_type)
             this = parent
             parent = self._find_parent_name(parent)
-            edge_type = EdgeType.CONTAINS
+            edge_type = helpers.EdgeType.CONTAINS
             if not parent:
                 break
             elif not was_added:
@@ -582,7 +582,7 @@ class KnowledgeGraph:
         if is_internal:
             self.graph.add_edge(library_node, this, edge_type)
         else:
-            self.add_node_to_graph(fake_library_node, NodeType.EXTERNAL_LIBRARY)
+            self.add_node_to_graph(fake_library_node, helpers.NodeType.EXTERNAL_LIBRARY)
             self.graph.add_edge(fake_library_node, this, edge_type)
         return module_nodes
 
@@ -638,7 +638,7 @@ class KnowledgeGraph:
         library: str, definitions_file: str
     ) -> "KnowledgeGraph":
         LOGGER.info(f"Creating graph from '{definitions_file}'")
-        return KnowledgeGraph(library, AgdaDefinitionForest.load(definitions_file))
+        return KnowledgeGraph(library, agda.DefinitionForest.load(definitions_file))
 
     @staticmethod
     def database_node_id(node_id: Node) -> str:
@@ -652,11 +652,11 @@ class KnowledgeGraph:
             name = node_id
         return name.split(".")[-1]
 
-    def _get_node_label(self, node_id: Node) -> NodeType:
+    def _get_node_label(self, node_id: Node) -> helpers.NodeType:
         return self.graph.nodes[node_id]["label"]
 
     @staticmethod
-    def _node_type_to_str(node_type: NodeType) -> str:
+    def _node_type_to_str(node_type: helpers.NodeType) -> str:
         replacements = [
             # ("ω", "_omega"),
             ("-", "_")
@@ -669,7 +669,7 @@ class KnowledgeGraph:
         return label
 
     @staticmethod
-    def database_edge_type(edge_type: EdgeType):
+    def database_edge_type(edge_type: helpers.EdgeType):
         return edge_type.value
 
     def dump_to_database(
@@ -681,7 +681,7 @@ class KnowledgeGraph:
             path_to_neo, authentication
         )
         # constraints
-        for node_type in list(self.definition_types) + [NodeType.MODULE_LIKE]:
+        for node_type in list(self.definition_types) + [helpers.NodeType.MODULE_LIKE]:
             DatabaseManipulation.create_uniqueness_constraint(
                 graph, KnowledgeGraph._node_type_to_str(node_type)
             )
@@ -721,8 +721,8 @@ class KnowledgeGraph:
                 properties[statistic] = values[node]
         else:
             label = self.graph.nodes[node]["label"]
-            assert isinstance(label, NodeType)
-            if label == NodeType.LIBRARY:
+            assert isinstance(label, helpers.NodeType)
+            if label == helpers.NodeType.LIBRARY:
                 for statistic, value in self.graph_properties.graph_statistics.items():
                     properties[statistic] = value
             elif label.is_module() or label.is_external():
@@ -743,24 +743,24 @@ class KnowledgeGraph:
     def _create_labels_definition(self, node: Node):
         labels = [KnowledgeGraph._node_type_to_str(self._get_node_label(node))]
         if not self.id_to_definition[node].is_internal:
-            labels.append(KnowledgeGraph._node_type_to_str(NodeType.EXTERNAL))
+            labels.append(KnowledgeGraph._node_type_to_str(helpers.NodeType.EXTERNAL))
         return labels
 
     def _create_labels_meta(self, node: Node):
         base_label = self._get_node_label(node)
         labels = [
             KnowledgeGraph._node_type_to_str(label)
-            for label in [NodeType.MODULE_LIKE, base_label]
+            for label in [helpers.NodeType.MODULE_LIKE, base_label]
         ]
         if not node[0]:
             # hash is dummy
             labels.pop()
-        if NodeType.is_external(base_label):
-            labels.append(self._node_type_to_str(NodeType.EXTERNAL))
+        if helpers.NodeType.is_external(base_label):
+            labels.append(self._node_type_to_str(helpers.NodeType.EXTERNAL))
         return labels
 
     def _init_graph_properties(self, debug: bool) -> GraphProperties:
-        prop_file = os.path.join(Locations.DUMPS_DIR, self._library + "_prop.pickle")
+        prop_file = os.path.join(helpers.Locations.DUMPS_DIR, self._library + "_prop.pickle")
         if os.path.exists(prop_file):
             LOGGER.info(f"Loading graph properties from '{prop_file}'")
             return GraphProperties.load(prop_file)
@@ -804,12 +804,12 @@ class KnowledgeGraph:
 
 
 if __name__ == "__main__":
-    lib_name = Locations.NAME_AGDA_TEST
-    kg = KnowledgeGraph.load(Locations.knowledge_graph(lib_name))
+    lib_name = helpers.Locations.NAME_AGDA_TEST
+    kg = KnowledgeGraph.load(helpers.Locations.knowledge_graph(lib_name))
     LOGGER.info("Loaded")
-    kg.dump_pure(Locations.knowledge_graph_pure(lib_name))
+    kg.dump_pure(helpers.Locations.knowledge_graph_pure(lib_name))
     # LOGGER.info("Dumped")
-    # g = KnowledgeGraph.load_pure(Locations.knowledge_graph_pure(lib_name))
+    # g = KnowledgeGraph.load_pure(helpers.Locations.knowledge_graph_pure(lib_name))
     # print(len(g.edges), len(g.nodes))
-    kg.graph_text_dump(Locations.graph_text_dump(lib_name))
+    kg.graph_text_dump(helpers.Locations.graph_text_dump(lib_name))
     # kg.dump_to_database()

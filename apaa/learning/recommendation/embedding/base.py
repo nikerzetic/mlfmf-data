@@ -1,8 +1,8 @@
 from sklearn.neighbors import VALID_METRICS
-from apaa.data.structures.agda_tree import AgdaDefinition
+from apaa.data.structures.agda_tree import agda.Definition
 from apaa.learning.node_embedding.base import NodeEmbeddingBase
 from apaa.learning.recommendation.base import KNNRecommender
-from apaa.other.helpers import MyTypes
+from apaa.other.helpers import helpers.MyTypes
 
 
 import networkx as nx
@@ -12,9 +12,9 @@ import numpy as np
 
 from typing import Any, Dict, List, Literal, Optional, Tuple
 
-Node = MyTypes.NODE
-array1d = MyTypes.ARRAY_1D
-array2d = MyTypes.ARRAY_2D
+Node = helpers.MyTypes.NODE
+array1d = helpers.MyTypes.ARRAY_1D
+array2d = helpers.MyTypes.ARRAY_2D
 
 
 class KNNNodeEmbeddingRecommender(KNNRecommender):
@@ -34,7 +34,7 @@ class KNNNodeEmbeddingRecommender(KNNRecommender):
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[MyTypes.NODE, AgdaDefinition],
+        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
         **embed_kwargs: Any,
     ):
         self.embed_documents(graph, definitions, **embed_kwargs)
@@ -48,7 +48,7 @@ class KNNNodeEmbeddingRecommender(KNNRecommender):
     def embed_documents(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[MyTypes.NODE, AgdaDefinition],
+        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
         **embed_kwargs: Any,
     ):
         self.initialize_examples_and_distance_matrix(list(graph.nodes))
@@ -72,7 +72,7 @@ class KNNNodeEmbeddingRecommender(KNNRecommender):
         if not isinstance(self.embeddings, np.ndarray):
             self.embeddings = self.embeddings.todense()  # type: ignore
 
-    def predict_one(self, example: AgdaDefinition) -> List[Tuple[float, Node]]:
+    def predict_one(self, example: agda.Definition) -> List[Tuple[float, Node]]:
         assert self.embeddings is not None
         node = example.name
         if node not in self.example_to_i:
@@ -86,7 +86,7 @@ class KNNNodeEmbeddingRecommender(KNNRecommender):
             self.distances_to_tuples(distances), True, False
         )
 
-    def compute_distances(self, example: AgdaDefinition) -> tuple[array1d, array1d]:
+    def compute_distances(self, example: agda.Definition) -> tuple[array1d, array1d]:
         assert self.embeddings is not None
         node = example.name
         if node not in self.example_to_i:

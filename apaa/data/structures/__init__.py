@@ -1,10 +1,9 @@
-from .agda_fact import AgdaFact
-from .agda_tree import (
-    AgdaNode,
-    AgdaTree,
-    AgdaForest,
-    AgdaDefinition,
-    AgdaDefinitionForest,
+from .agda import (
+    Node,
+    Tree,
+    Forest,
+    Definition,
+    DefinitionForest,
 )
 from .database import DatabaseManipulation
 from .graph_properties import GraphProperties
@@ -12,12 +11,11 @@ from .knowledge_graph import KnowledgeGraph
 
 
 __all__ = [
-    "AgdaFact",
-    "AgdaNode",
-    "AgdaTree",
-    "AgdaForest",
-    "AgdaDefinition",
-    "AgdaDefinitionForest",
+    "Node",
+    "Tree",
+    "Forest",
+    "Definition",
+    "DefinitionForest",
     "DatabaseManipulation",
     "GraphProperties",
     "KnowledgeGraph",

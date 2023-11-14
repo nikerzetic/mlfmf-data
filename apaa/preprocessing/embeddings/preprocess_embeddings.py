@@ -1,10 +1,5 @@
-from apaa.data.structures import AgdaDefinitionForest, AgdaFact
-from apaa.other.helpers import Other, Locations, Embeddings, TextManipulation
-
 from collections import Counter
 import tqdm
-# import fasttext as ft
-# import fasttext.util as ftu
 import os
 import traceback
 from gensim.models.keyedvectors import KeyedVectors
@@ -15,25 +10,29 @@ import matplotlib.pyplot as plt
 import random
 import bisect
 
+import apaa.data.structures.agda as agda
+import apaa.helpers as helpers
 
-LOGGER = Other.create_logger(__file__)
+
+LOGGER = helpers.create_logger(__file__)
 
 
 def find_vocabulary(library: str):
     LOGGER.info(f"Loading {library}")
-    out_file_names = Locations.vocabulary_file(library, False)
-    out_file_all = Locations.vocabulary_file(library, True)
+    out_file_names = helpers.Locations.vocabulary_file(library, False)
+    out_file_all = helpers.Locations.vocabulary_file(library, True)
     if os.path.exists(out_file_all) and os.path.exists(out_file_names):
         LOGGER.info(f"Already done: find vocabulary for {library}")
         return
-    lib_entries: AgdaDefinitionForest = AgdaDefinitionForest.load(Locations.definitions_pickled(library))
+    lib_entries: agda.DefinitionForest = agda.DefinitionForest.load(helpers.Locations.definitions_pickled(library))
     counts_names = Counter()
     counts_all = Counter()
     forbidden = {""}
     for entry in tqdm.tqdm(lib_entries):
         forbidden1, forbidden2, name = entry.name
-        counts_names.update(TextManipulation.name_to_parts(name))
-        counts_all.update(AgdaFact("irrelevant", tree=entry).words)
+        counts_names.update(helpers.TextManipulation.name_to_parts(name))
+        # TODO The following is depricated. It was defined in apaa/data/structures/agda_fact.py
+        # counts_all.update(Fact("irrelevant", tree=entry).words)
         forbidden.add(forbidden1)
         forbidden.add(forbidden2)
     LOGGER.info(f"Library {library} contains {len(counts_names)} words in definition names.")
@@ -97,7 +96,7 @@ def embedding_vocabulary(text_file: str, word_file: str):
 
 
 def prepare_all_embeddings():
-    vec_location = os.path.join(Locations.EMBEDDINGS_DIR, "pretrained")
+    vec_location = os.path.join(helpers.Locations.EMBEDDINGS_DIR, "pretrained")
     bin_files = [os.path.join(vec_location, f) for f in os.listdir(vec_location) if f.endswith(".bin")]
     for file in bin_files:
         LOGGER.info(f"Processing '{file}'")
@@ -109,8 +108,8 @@ def prepare_all_embeddings():
 
 def n_missing():
     LOGGER.info("Computing missing words")
-    libs = [Locations.NAME_STDLIB, Locations.NAME_UNIMATH, Locations.NAME_AGDA_TEST]
-    vec_location = os.path.join(Locations.EMBEDDINGS_DIR, "pretrained")
+    libs = [helpers.Locations.NAME_STDLIB, helpers.Locations.NAME_UNIMATH, helpers.Locations.NAME_AGDA_TEST]
+    vec_location = os.path.join(helpers.Locations.EMBEDDINGS_DIR, "pretrained")
     vec_word_files = [os.path.join(vec_location, f) for f in os.listdir(vec_location) if "_words.txt" in f]
     scores = []
     for vec_word_file in vec_word_files:
@@ -118,11 +117,11 @@ def n_missing():
         vec_word_file_name = os.path.basename(vec_word_file)
         vec_word_file_name = vec_word_file_name[:vec_word_file_name.rfind(".")]
         for lib in libs:
-            lib_words = load_lib_words(Locations.vocabulary_file(lib, True))
+            lib_words = load_lib_words(helpers.Locations.vocabulary_file(lib, True))
             missing_words = score(lib_words, vec_words)
             penalty = (len(missing_words), sum(missing_words.values()))
             scores.append((lib, penalty, os.path.basename(vec_word_file)))
-            report_file = os.path.join(Locations.EMBEDDINGS_DIR, f"missing_for_{lib}_in_{vec_word_file_name}.txt")
+            report_file = os.path.join(helpers.Locations.EMBEDDINGS_DIR, f"missing_for_{lib}_in_{vec_word_file_name}.txt")
             with open(report_file, "w", encoding="utf-8") as f:
                 for word, count in sorted(missing_words.items(), key=lambda t: -t[1]):
                     print(f"{word}\t{count}", file=f)
@@ -167,7 +166,7 @@ def score(words_lib, words_vec):
 
 
 def embedding_distribution(file: str):
-    _, matrix = Embeddings.load_embedding(file)
+    _, matrix = helpers.Embeddings.load_embedding(file)
     # norms
     euklid_norm = np.sum(np.square(matrix), axis=1)
     plt.hist(euklid_norm, bins=20)
@@ -222,7 +221,7 @@ def embedding_quality(file: str):
     DIST_VERSION = 1
 
     # similarity between random words vs. similarity of lower : upper-case
-    words, embeddings = Embeddings.load_embedding(file, normalize=True)
+    words, embeddings = helpers.Embeddings.load_embedding(file, normalize=True)
     n_words, n_dim = embeddings.shape
 
     groups = {}  # lowercase: all cases
@@ -320,14 +319,14 @@ if __name__ == "__main__":
     do_analisis = False
     do_quality = False
     if do_lib_vocab:
-        for lib_name in [Locations.NAME_STDLIB, Locations.NAME_UNIMATH, Locations.NAME_AGDA_TEST]:
+        for lib_name in [helpers.Locations.NAME_STDLIB, helpers.Locations.NAME_UNIMATH, helpers.Locations.NAME_AGDA_TEST]:
             find_vocabulary(lib_name)
     if do_vec_vocab:
         prepare_all_embeddings()
     if do_missing:
         n_missing()
 
-    the_embeddings = os.path.join(Locations.EMBEDDINGS_DIR, "pretrained", "crawl-300d-2M-subword.txt")
+    the_embeddings = os.path.join(helpers.Locations.EMBEDDINGS_DIR, "pretrained", "crawl-300d-2M-subword.txt")
     if do_analisis:
         embedding_distribution(the_embeddings)
     if do_quality:

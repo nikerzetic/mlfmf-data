@@ -5,16 +5,16 @@ from apaa.learning.edge_prediction.base import (
     BaseEdgeEmbeddingRecommender,
     EdgeEmbeddingScheme,
 )
-from apaa.data.structures.agda_tree import AgdaDefinition
-from apaa.other.helpers import MyTypes
+from apaa.data.structures.agda_tree import agda.Definition
+from apaa.other.helpers import helpers.MyTypes
 
 import networkx as nx
 
 from typing import Literal, Any
 
 
-Node = MyTypes.NODE
-array2d = MyTypes.ARRAY_2D
+Node = helpers.MyTypes.NODE
+array2d = helpers.MyTypes.ARRAY_2D
 
 
 class TFIDFAndNode2VecEmbeddingRecommender(BaseEdgeEmbeddingRecommender):
@@ -39,7 +39,7 @@ class TFIDFAndNode2VecEmbeddingRecommender(BaseEdgeEmbeddingRecommender):
         )
 
     def embed_nodes(
-        self, graph: nx.MultiDiGraph, definitions: dict[Node, AgdaDefinition]
+        self, graph: nx.MultiDiGraph, definitions: dict[Node, agda.Definition]
     ) -> tuple[list[Node], array2d]:
         self.embedder.fit(graph, definitions)
         assert self.embedder.node_embeddings is not None
@@ -76,7 +76,7 @@ class Word2VecAndNode2VecEmbeddingRecommender(BaseEdgeEmbeddingRecommender):
         )
 
     def embed_nodes(
-        self, graph: nx.MultiDiGraph, definitions: dict[Node, AgdaDefinition]
+        self, graph: nx.MultiDiGraph, definitions: dict[Node, agda.Definition]
     ) -> tuple[list[Node], array2d]:
         self.embedder.fit(graph, definitions)
         assert self.embedder.node_embeddings is not None

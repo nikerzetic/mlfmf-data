@@ -9,7 +9,7 @@ import networkx as nx
 import tqdm
 
 from apaa.data.structures import KnowledgeGraph
-from apaa.data.structures.agda_tree import AgdaDefinition
+import apaa.data.structures.agda as agda
 from apaa.learning.edge_prediction import (
     BaseEdgeEmbeddingRecommender,
     Node2VecEdgeEmbeddingRecommender,
@@ -28,22 +28,22 @@ from apaa.learning.recommendation.embedding import (
     WordEmbeddingRecommender,
     EmbeddingAnalogiesRecommender,
 )
-from apaa.other.helpers import Embeddings, Locations, MyTypes, Other, EdgeType
+import apaa.helpers as helpers
 
 
 Config = tuple[str, dict[str, Any]]
 Configs = list[Config]
 
 
-LOGGER = Other.create_logger(__file__)
+LOGGER = helpers.create_logger(__file__)
 
-Node = MyTypes.NODE
+Node = helpers.MyTypes.NODE
 Dataset = tuple[
     nx.MultiDiGraph,
-    tuple[dict[Node, AgdaDefinition], dict[Node, AgdaDefinition]],
+    tuple[dict[Node, agda.Definition], dict[Node, agda.Definition]],
     tuple[
-        List[Tuple[Node, Node, EdgeType]],
-        List[Tuple[Node, Node, EdgeType]],
+        List[Tuple[Node, Node, helpers.EdgeType]],
+        List[Tuple[Node, Node, helpers.EdgeType]],
     ],
 ]
 
@@ -61,12 +61,12 @@ def learn_and_predict(
     force: bool = False,
 ):
     library = os.path.basename(library_path)
-    temp_learning_file = Locations.temp_learning_file(
+    temp_learning_file = helpers.Locations.temp_learning_file(
         library, model_class, file_appendix
     )
-    model_dump_file = Locations.model_file(library, model_class, file_appendix)
-    results_file = Locations.predictions_file(library, model_class, file_appendix)
-    meta_file = Locations.experiment_meta_file(library, model_class, file_appendix)
+    model_dump_file = helpers.Locations.model_file(library, model_class, file_appendix)
+    results_file = helpers.Locations.predictions_file(library, model_class, file_appendix)
+    meta_file = helpers.Locations.experiment_meta_file(library, model_class, file_appendix)
     kg_pure_file = os.path.join(library_path, "graph.pkl")
     if force:
         LOGGER.info("Forcing to run ... Deleting previous results ...")
@@ -157,7 +157,7 @@ def learn(
     model_class: Type[BaseRecommender],
     model_args: Dict[str, Any],
     train_graph: nx.MultiDiGraph,
-    id_to_def: Dict[Node, AgdaDefinition],
+    id_to_def: Dict[Node, agda.Definition],
     fit_args: Dict[str, Any],
     meta_file: str,
 ) -> tuple[bool, Optional[BaseRecommender], Optional[float], Optional[bool]]:
@@ -187,10 +187,10 @@ def learn(
 def predict_and_evaluate(
     kg: nx.MultiDiGraph,
     train_graph: nx.MultiDiGraph,
-    defs_for_training: dict[Node, AgdaDefinition],
-    test_definitions: dict[Node, AgdaDefinition],
-    positive_edges: List[Tuple[Node, Node, EdgeType]],
-    negative_edges: List[Tuple[Node, Node, EdgeType]],
+    defs_for_training: dict[Node, agda.Definition],
+    test_definitions: dict[Node, agda.Definition],
+    positive_edges: List[Tuple[Node, Node, helpers.EdgeType]],
+    negative_edges: List[Tuple[Node, Node, helpers.EdgeType]],
     actual_k: int,
     model: BaseRecommender,
     compute_recommender_style: bool,
@@ -240,7 +240,7 @@ def predict_and_evaluate(
 
 
 def evaluate_recommender_style(
-    test_defs: dict[Node, AgdaDefinition],
+    test_defs: dict[Node, agda.Definition],
     model: BaseRecommender,
     measures_recommender: QualityMeasureRecommender,
     actual_neighbours_recommender: dict[Node, list[tuple[float, Node]]],
@@ -255,9 +255,9 @@ def evaluate_recommender_style(
 
 
 def evaluate_classification_style(
-    defs_for_training: dict[Node, AgdaDefinition],
-    positive_edges: List[Tuple[Node, Node, EdgeType]],
-    negative_edges: List[Tuple[Node, Node, EdgeType]],
+    defs_for_training: dict[Node, agda.Definition],
+    positive_edges: List[Tuple[Node, Node, helpers.EdgeType]],
+    negative_edges: List[Tuple[Node, Node, helpers.EdgeType]],
     model: BaseRecommender,
     measures_classification: QualityMeasureClassification,
     results_classification: dict[
@@ -268,7 +268,7 @@ def evaluate_classification_style(
 ):
     for edges, true_value in zip([positive_edges, negative_edges], [1, 0]):
         for source, sink, _ in tqdm.tqdm(edges):
-            if not AgdaDefinition.is_normal_definition(sink):
+            if not agda.Definition.is_normal_definition(sink):
                 LOGGER.warning(
                     f"Skipping source-sink, since sink ({sink}) is not normal."
                 )
@@ -460,9 +460,9 @@ def create_node_to_vec_configs() -> Configs:
 
 def create_word_embedding_configs():
     options: Configs = []
-    words, word_embeddings = Embeddings.load_embedding(
+    words, word_embeddings = helpers.Embeddings.load_embedding(
         os.path.join(
-            Locations.EMBEDDINGS_DIR, "pretrained", "stdlib_crawl-300d-2M-subword2.txt"
+            helpers.Locations.EMBEDDINGS_DIR, "pretrained", "stdlib_crawl-300d-2M-subword2.txt"
         )
     )
     for frequency_weight, metric in itertools.product(

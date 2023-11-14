@@ -3,13 +3,13 @@ from tkinter import X
 from typing import Optional, List, Dict, Any, Tuple
 import numpy as np
 import networkx as nx
-from apaa.data.structures.agda_tree import AgdaDefinition
+from apaa.data.structures.agda_tree import agda.Definition
 
-from apaa.other.helpers import MyTypes
+from apaa.other.helpers import helpers.MyTypes
 
 
-Node = MyTypes.NODE
-array2d = MyTypes.ARRAY_2D
+Node = helpers.MyTypes.NODE
+array2d = helpers.MyTypes.ARRAY_2D
 
 
 class NodeEmbeddingBase:
@@ -38,7 +38,7 @@ class NodeEmbeddingBase:
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, AgdaDefinition],
+        definitions: Dict[Node, agda.Definition],
         **kwargs: Any,
     ) -> None:
         nodes, embeddings = self.embed(graph, definitions, **kwargs)
@@ -47,7 +47,7 @@ class NodeEmbeddingBase:
     def embed(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, AgdaDefinition],
+        definitions: Dict[Node, agda.Definition],
         **kwargs: Any,
     ) -> Tuple[List[Node], array2d]:
         raise NotImplementedError()
@@ -64,7 +64,7 @@ class EmbeddingConcatenator(NodeEmbeddingBase):
     def embed(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, AgdaDefinition],
+        definitions: Dict[Node, agda.Definition],
         **kwargs: Any,
     ) -> Tuple[List[Node], array2d]:
         for e in self.embedders:

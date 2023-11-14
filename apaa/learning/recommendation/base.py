@@ -4,17 +4,17 @@ from typing import Union, List, Tuple, Optional, Dict, Literal, Any
 import numpy as np
 import networkx as nx
 
-from apaa.data.structures.agda_tree import AgdaDefinition
-from apaa.other.helpers import MyTypes
+from apaa.data.structures.agda_tree import agda.Definition
+from apaa.other.helpers import helpers.MyTypes
 
 
-Node = MyTypes.NODE
+Node = helpers.MyTypes.NODE
 
 
 class BaseRecommender:
     def __init__(self, name: str, k: Literal["all"] | int) -> None:
         self.name = name
-        self.definitions: Optional[Dict[Node, AgdaDefinition]] = None
+        self.definitions: Optional[Dict[Node, agda.Definition]] = None
         self.graph: Optional[nx.MultiDiGraph] = None
         self._k = self._check_k(k)
 
@@ -41,15 +41,15 @@ class BaseRecommender:
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, AgdaDefinition],
+        definitions: Dict[Node, agda.Definition],
         **kwargs: Any
     ) -> None:
         raise NotImplementedError()
 
     def predict(
-        self, example_s: AgdaDefinition | List[AgdaDefinition]
+        self, example_s: agda.Definition | List[agda.Definition]
     ) -> List[Tuple[float, Node]] | List[List[Tuple[float, Node]]]:
-        if isinstance(example_s, AgdaDefinition):
+        if isinstance(example_s, agda.Definition):
             unpack = True
             e_list = [example_s]
         else:
@@ -63,7 +63,7 @@ class BaseRecommender:
         else:
             return neighbours
 
-    def predict_one(self, example: AgdaDefinition) -> List[Tuple[float, Node]]:
+    def predict_one(self, example: agda.Definition) -> List[Tuple[float, Node]]:
         """
         Returns a sorted list of pairs (distance, other id).
         """
@@ -71,8 +71,8 @@ class BaseRecommender:
 
     def predict_one_edge(
         self,
-        example: AgdaDefinition,
-        other: AgdaDefinition,
+        example: agda.Definition,
+        other: agda.Definition,
         nearest_neighbours: Optional[List[Tuple[float, Node]]] = None,
     ) -> float:
         """
@@ -117,7 +117,7 @@ class BaseRecommender:
         is_similarity: bool,
     ) -> list[tuple[float, Node]]:
         predictions = [
-            pair for pair in predictions if AgdaDefinition.is_normal_definition(pair[1])
+            pair for pair in predictions if agda.Definition.is_normal_definition(pair[1])
         ]
         if needs_normalisation or not is_similarity:
             ys = np.array([y for y, _ in predictions])
@@ -193,8 +193,8 @@ class KNNRecommender(BaseRecommender):
             return neighbours
 
     def distances_to_tuples(
-        self, distances: MyTypes.ARRAY_1D, for_existing: bool = False
-    ) -> List[Tuple[float, MyTypes.NODE]]:
+        self, distances: helpers.MyTypes.ARRAY_1D, for_existing: bool = False
+    ) -> List[Tuple[float, helpers.MyTypes.NODE]]:
         assert self.examples is not None
         nearest = np.argsort(distances)
         n_predictions = self.n_predictions(len(nearest))
@@ -203,7 +203,7 @@ class KNNRecommender(BaseRecommender):
         nearest = nearest[:upper]
         return [(distances[j], self.examples[j]) for j in nearest]
 
-    def predict_one(self, example: AgdaDefinition) -> List[Tuple[float, Node]]:
+    def predict_one(self, example: agda.Definition) -> List[Tuple[float, Node]]:
         raise NotImplementedError()
 
     @staticmethod

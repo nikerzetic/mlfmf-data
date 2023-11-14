@@ -4,18 +4,18 @@ import numpy as np
 import networkx as nx
 
 from apaa.learning.recommendation.base import BaseRecommender
-from apaa.other.helpers import MyTypes, NodeType, EdgeType, Other
-from apaa.data.structures.agda_tree import AgdaDefinition
+from apaa.other.helpers import helpers.MyTypes, helpers.NodeType, helpers.EdgeType, helpers.Other
+from apaa.data.structures.agda_tree import agda.Definition
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
 
-Node = MyTypes.NODE
-array1d = MyTypes.ARRAY_1D
-array2d = MyTypes.ARRAY_2D
+Node = helpers.MyTypes.NODE
+array1d = helpers.MyTypes.ARRAY_1D
+array2d = helpers.MyTypes.ARRAY_2D
 
-LOGGER = Other.create_logger(__file__)
+LOGGER = helpers.create_logger(__file__)
 
 
 class EdgeEmbeddingScheme(Enum):
@@ -59,7 +59,7 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
     def embed_nodes(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[MyTypes.NODE, AgdaDefinition],
+        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
     ) -> Tuple[List[Node], array2d]:
         raise NotImplementedError()
 
@@ -90,7 +90,7 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[MyTypes.NODE, AgdaDefinition],
+        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
         **embed_kwargs: Any,
     ):
         nodes, embeddings = self.embed_nodes(graph, definitions, **embed_kwargs)
@@ -135,30 +135,30 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
         graph: nx.MultiDiGraph,
         edge_file: str | None,
     ) -> Tuple[
-        List[Tuple[MyTypes.NODE, MyTypes.NODE, EdgeType]],
-        List[Tuple[MyTypes.NODE, MyTypes.NODE, EdgeType]],
+        List[Tuple[helpers.MyTypes.NODE, helpers.MyTypes.NODE, helpers.EdgeType]],
+        List[Tuple[helpers.MyTypes.NODE, helpers.MyTypes.NODE, helpers.EdgeType]],
     ]:
         """
         Consider definition functions only. Then, just randomly sample.
         Might be more intelligent to sample the close ones.
         Will do that later.
         """
-        definitions: List[MyTypes.NODE] = []
-        theorem_like_label = NodeType.get_theorem_like_tag(graph)
+        definitions: List[helpers.MyTypes.NODE] = []
+        theorem_like_label = helpers.NodeType.get_theorem_like_tag(graph)
         for node, label in graph.nodes(data="label"):  # type: ignore
             if label == theorem_like_label:
                 definitions.append(node)  # type: ignore
-        positive_edges: List[Tuple[str, str, EdgeType]] = []
+        positive_edges: List[Tuple[str, str, helpers.EdgeType]] = []
         n_edges_per_node: Dict[Node, int] = {node: 0 for node in definitions}
         for u, v, e_type in graph.edges(nbunch=definitions, keys=True):  # type: ignore
-            if e_type == EdgeType.REFERENCE_IN_BODY:
+            if e_type == helpers.EdgeType.REFERENCE_IN_BODY:
                 positive_edges.append((u, v, e_type))  # type: ignore
                 n_edges_per_node[u] += 1  # type: ignore
-        negative_edges: List[Tuple[str, str, EdgeType]] = []
+        negative_edges: List[Tuple[str, str, helpers.EdgeType]] = []
         # randomly sample
         for node, count in n_edges_per_node.items():
             negative_edges.extend(
-                Other.sample_negative_edges(graph, definitions, node, count)  # type: ignore
+                helpers.Other.sample_negative_edges(graph, definitions, node, count)  # type: ignore
             )
         if edge_file is not None:
             LOGGER.info(f"Loading false positives from {edge_file}")
@@ -170,7 +170,7 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
                 if node in false_positives:
                     negative_edges.extend(
                         map(
-                            lambda fp, origin=node: (origin, fp, EdgeType.REFERENCE_IN_BODY),
+                            lambda fp, origin=node: (origin, fp, helpers.EdgeType.REFERENCE_IN_BODY),
                             false_positives[node][:count],
                         )
                     )
@@ -214,20 +214,20 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
                     fps.append(fp_node)
         return false_positives
 
-    def predict_one(self, example: AgdaDefinition) -> List[Tuple[float, Node]]:
+    def predict_one(self, example: agda.Definition) -> List[Tuple[float, Node]]:
         # This is inefficient (as compared to predict_one_edge)
         assert isinstance(self.graph, nx.MultiDiGraph)
         candidates = [
             node
             for node in self.node_to_index
-            if not self.graph.has_edge(example.name, node, EdgeType.REFERENCE_IN_BODY)
+            if not self.graph.has_edge(example.name, node, helpers.EdgeType.REFERENCE_IN_BODY)
         ]
         return self.predict_edges(example.name, candidates)
 
     def predict_one_edge(
         self,
-        example: AgdaDefinition,
-        other: AgdaDefinition,
+        example: agda.Definition,
+        other: agda.Definition,
         nearest_neighbours: List[Tuple[float, Node]] | None = None,
     ) -> float:
         # This is efficient (as compared to predict_one)

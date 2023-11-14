@@ -2,18 +2,18 @@ from typing import Any, Dict, List, Tuple, Literal
 
 import networkx as nx
 from sklearn.ensemble import RandomForestClassifier
-from apaa.data.structures.agda_tree import AgdaDefinition
+from apaa.data.structures.agda_tree import agda.Definition
 
 from apaa.learning.edge_prediction.base import (
     BaseEdgeEmbeddingRecommender,
     EdgeEmbeddingScheme,
 )
 from apaa.learning.node_embedding.graph import NodeToVecEmbedding
-from apaa.other.helpers import MyTypes
+from apaa.other.helpers import helpers.MyTypes
 
 
-Node = MyTypes.NODE
-array2d = MyTypes.ARRAY_2D
+Node = helpers.MyTypes.NODE
+array2d = helpers.MyTypes.ARRAY_2D
 
 
 class Node2VecEdgeEmbeddingRecommender(BaseEdgeEmbeddingRecommender):
@@ -38,7 +38,7 @@ class Node2VecEdgeEmbeddingRecommender(BaseEdgeEmbeddingRecommender):
         self.embedder = NodeToVecEmbedding(**node_to_vec_kwargs)
 
     def embed_nodes(
-        self, graph: nx.MultiDiGraph, definitions: Dict[Node, AgdaDefinition]
+        self, graph: nx.MultiDiGraph, definitions: Dict[Node, agda.Definition]
     ) -> Tuple[List[Node], array2d]:
         self.embedder.fit(graph, definitions)
         assert self.embedder.node_embeddings is not None

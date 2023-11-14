@@ -1,6 +1,7 @@
 from light_weight_data_loader import load_library, EntryNode, Entry
-from apaa.other.helpers import NodeType
-from apaa.data.structures import AgdaNode, AgdaDefinition, AgdaDefinitionForest, KnowledgeGraph
+import apaa.helpers as helpers
+import apaa.data.structures.agda as agda
+from apaa.data.structures import KnowledgeGraph
 from apaa.data.manipulation import prepare_dataset
 
 import os
@@ -10,13 +11,13 @@ import tqdm
 import networkx as nx
 
 
-def create_heavy_entry(entry_node: EntryNode) -> AgdaNode:
-    node_type = NodeType(entry_node.type)
+def create_heavy_entry(entry_node: EntryNode) -> agda.Node:
+    node_type = helpers.NodeType(entry_node.type)
     description = entry_node.description
-    return AgdaNode(node_type, description, None, [])
+    return agda.Node(node_type, description, None, [])
 
 
-def convert_entry(entry: Entry, module_name: str, is_internal: bool) -> AgdaDefinition:
+def convert_entry(entry: Entry, module_name: str, is_internal: bool) -> agda.Definition:
     stack = [entry.root]
     original = {}
     converted = {}
@@ -33,15 +34,15 @@ def convert_entry(entry: Entry, module_name: str, is_internal: bool) -> AgdaDefi
     for node_id, node in original.items():
         converted_node = converted[node_id]
         converted_children = [converted[child.id] for child in node.children]
-        AgdaNode.connect_parent_to_children(converted_node, converted_children)
+        agda.Node.connect_parent_to_children(converted_node, converted_children)
     # create tree that looks like
     #        module node
     #   module name     entry tree
-    module_node = AgdaNode(NodeType.MODULE, "", None, [])
+    module_node = agda.Node(helpers.NodeType.MODULE, "", None, [])
     entry_root = converted[entry.root.id]
-    module_name_node = AgdaNode(NodeType.MODULE_NAME, module_name, None, [])
-    AgdaNode.connect_parent_to_children(module_node, [module_name_node, entry_root])
-    tree = AgdaDefinition(entry.name, entry_root, is_internal)
+    module_name_node = agda.Node(helpers.NodeType.MODULE_NAME, module_name, None, [])
+    agda.Node.connect_parent_to_children(module_node, [module_name_node, entry_root])
+    tree = agda.Definition(entry.name, entry_root, is_internal)
     return tree
 
 
@@ -49,12 +50,12 @@ def convert_entries(
     entries: list[Entry],
     entry_to_module: dict[str, str],
     entry_to_is_internal: dict[str, bool],
-) -> AgdaDefinitionForest:
+) -> agda.DefinitionForest:
     trees = []
     for entry in tqdm.tqdm(entries):
         module_name = entry_to_module[entry.name]
         trees.append(convert_entry(entry, module_name, entry_to_is_internal[entry.name]))
-    forest = AgdaDefinitionForest(trees)
+    forest = agda.DefinitionForest(trees)
     return forest
 
 

@@ -4,11 +4,11 @@ from typing import Any, Dict, Literal, Optional
 
 import networkx as nx
 
-from apaa.data.structures.agda_tree import AgdaDefinition
+from apaa.data.structures.agda_tree import agda.Definition
 from apaa.learning.recommendation.base import BaseRecommender
-from apaa.other.helpers import MyTypes
+from apaa.other.helpers import helpers.MyTypes
 
-Node = MyTypes.NODE
+Node = helpers.MyTypes.NODE
 
 
 class NodeWeightScheme(Enum):
@@ -45,7 +45,7 @@ class TwoHops(BaseRecommender):
         self.node_degrees: dict[Node, float] = {}
 
     def fit(
-        self, graph: nx.MultiDiGraph, definitions: Dict[Node, AgdaDefinition], **kwargs
+        self, graph: nx.MultiDiGraph, definitions: Dict[Node, agda.Definition], **kwargs
     ):
         # The forbidden edges are:
         #
@@ -59,7 +59,7 @@ class TwoHops(BaseRecommender):
         for train_node in self.reversed_graph:
             self.node_degrees[train_node] = degrees(train_node, "w")
 
-    def predict_one(self, example: AgdaDefinition):
+    def predict_one(self, example: agda.Definition):
         """
         Distance between example and training node T is 1 / the weight of paths of form
         example - reference -> x <- reference - T, for some x in training set.
