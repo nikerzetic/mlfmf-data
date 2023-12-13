@@ -1,0 +1,59 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            // To run this task, you must install code2flow globally, with pip install code2flow
+            "label": "generate preprocessing dot file",
+            "type": "shell",
+            "command": "code2flow",
+            "args": [
+                "${workspaceFolder}\\apaa\\preprocessing\\",
+                "--output",
+                "${workspaceFolder}\\apaa_preprocessing.dot",
+                "--language=py",
+            ],
+            "presentation": {
+                "close": true,
+            },
+        },{
+            // To run this task, you must install code2flow globally, with pip install code2flow
+            "label": "generate data dot file",
+            "type": "shell",
+            "command": "code2flow",
+            "args": [
+                "${workspaceFolder}\\apaa\\data\\",
+                "--output",
+                "${workspaceFolder}\\apaa_data.dot",
+                "--language=py",
+            ],
+            "presentation": {
+                "close": true,
+            },
+        },{
+            // To run this task, you must install code2flow globally, with pip install code2flow
+            "label": "generate learning dot file",
+            "type": "shell",
+            "command": "code2flow",
+            "args": [
+                "${workspaceFolder}\\apaa\\learning\\",
+                "--output",
+                "${workspaceFolder}\\apaa_learning.dot",
+                "--language=py",
+            ],
+            "presentation": {
+                "close": true,
+            },
+        },
+        {
+            // To run this task, you must install code2flow globally, with pip install code2flow
+            "label": "generate dot files",
+            "dependsOn": [
+                "generate preprocessing dot file",
+                "generate data dot file",
+                "generate learning dot file",
+            ],
+        }
+    ]
+}
