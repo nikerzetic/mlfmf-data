@@ -4,8 +4,8 @@ from typing import Union, List, Tuple, Optional, Dict, Literal, Any
 import numpy as np
 import networkx as nx
 
-from apaa.data.structures.agda_tree import agda.Definition
-from apaa.other.helpers import helpers.MyTypes
+import apaa.data.structures.agda as agda
+import apaa.helpers as helpers
 
 
 Node = helpers.MyTypes.NODE

@@ -2,17 +2,16 @@ from collections import Counter
 from typing import Any, Dict, List, Tuple, Optional
 import networkx as nx
 import numpy as np
-from apaa.data.structures.agda_tree import agda.Definition
 from apaa.learning.node_embedding.base import Node, NodeEmbeddingBase
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from enum import Enum
 
-from apaa.other.helpers import helpers.MyTypes
+import apaa.data.structures.agda as agda
+import apaa.helpers as helpers
 
 
 array1d = helpers.MyTypes.ARRAY_1D
 array2d = helpers.MyTypes.ARRAY_2D
-
 
 class WordEmbedding(NodeEmbeddingBase):
     def __init__(self, name: str):

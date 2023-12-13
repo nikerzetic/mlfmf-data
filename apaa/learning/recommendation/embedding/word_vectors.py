@@ -1,5 +1,4 @@
 from typing import Dict, Literal, Optional, List, Any, Set, Tuple
-from apaa.data.structures.agda_tree import agda.Definition
 
 import networkx as nx
 import numpy as np
@@ -7,7 +6,9 @@ from scipy.spatial import distance as ssd
 
 from apaa.learning.node_embedding.word import DeepWordEmbedder, WordFrequencyWeight
 from apaa.learning.recommendation.embedding.base import KNNNodeEmbeddingRecommender
-from apaa.other.helpers import helpers.EdgeType, helpers.Other, helpers.MyTypes
+
+import apaa.data.structures.agda as agda
+import apaa.helpers as helpers
 
 
 array1d = helpers.MyTypes.ARRAY_1D

@@ -112,12 +112,13 @@ def n_missing():
     vec_location = os.path.join(helpers.Locations.EMBEDDINGS_DIR, "pretrained")
     vec_word_files = [os.path.join(vec_location, f) for f in os.listdir(vec_location) if "_words.txt" in f]
     scores = []
+
     for vec_word_file in vec_word_files:
-        vec_words = load_vec_words(vec_word_file)
+        vec_words = load_words(vec_word_file)
         vec_word_file_name = os.path.basename(vec_word_file)
         vec_word_file_name = vec_word_file_name[:vec_word_file_name.rfind(".")]
         for lib in libs:
-            lib_words = load_lib_words(helpers.Locations.vocabulary_file(lib, True))
+            lib_words = load_words(helpers.Locations.vocabulary_file(lib, True))
             missing_words = score(lib_words, vec_words)
             penalty = (len(missing_words), sum(missing_words.values()))
             scores.append((lib, penalty, os.path.basename(vec_word_file)))
@@ -126,11 +127,15 @@ def n_missing():
                 for word, count in sorted(missing_words.items(), key=lambda t: -t[1]):
                     print(f"{word}\t{count}", file=f)
     scores.sort()
+    
     for s in scores:
         LOGGER.info(s)
 
 
-def load_words(file: str, is_library):
+def load_words(
+        file: str, 
+        is_library: bool,
+        ):
     words = {}
     with open(file, encoding="utf-8") as f:
         if is_library:
@@ -147,14 +152,6 @@ def load_words(file: str, is_library):
                 count = 1
             words[word] = count
     return words
-
-
-def load_vec_words(file: str):
-    return load_words(file, False)
-
-
-def load_lib_words(file: str):
-    return load_words(file, True)
 
 
 def score(words_lib, words_vec):
@@ -312,22 +309,22 @@ def embedding_quality(file: str):
         LOGGER.info(f"{xs0} and {xs1}: d = {d:.2e}, q = {q:.2e}")
 
 
-if __name__ == "__main__":
-    do_lib_vocab = False
-    do_vec_vocab = False
-    do_missing = False
-    do_analisis = False
-    do_quality = False
-    if do_lib_vocab:
-        for lib_name in [helpers.Locations.NAME_STDLIB, helpers.Locations.NAME_UNIMATH, helpers.Locations.NAME_AGDA_TEST]:
-            find_vocabulary(lib_name)
-    if do_vec_vocab:
-        prepare_all_embeddings()
-    if do_missing:
-        n_missing()
+# if __name__ == "__main__":
+#     do_lib_vocab = False
+#     do_vec_vocab = False
+#     do_missing = False
+#     do_analisis = False
+#     do_quality = False
+#     if do_lib_vocab:
+#         for lib_name in [helpers.Locations.NAME_STDLIB, helpers.Locations.NAME_UNIMATH, helpers.Locations.NAME_AGDA_TEST]:
+#             find_vocabulary(lib_name)
+#     if do_vec_vocab:
+#         prepare_all_embeddings()
+#     if do_missing:
+#         n_missing()
 
-    the_embeddings = os.path.join(helpers.Locations.EMBEDDINGS_DIR, "pretrained", "crawl-300d-2M-subword.txt")
-    if do_analisis:
-        embedding_distribution(the_embeddings)
-    if do_quality:
-        embedding_quality(the_embeddings)
+#     the_embeddings = os.path.join(helpers.Locations.EMBEDDINGS_DIR, "pretrained", "crawl-300d-2M-subword.txt")
+#     if do_analisis:
+#         embedding_distribution(the_embeddings)
+#     if do_quality:
+#         embedding_quality(the_embeddings)

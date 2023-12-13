@@ -10,24 +10,10 @@ import tqdm
 
 from apaa.data.structures import KnowledgeGraph
 import apaa.data.structures.agda as agda
-from apaa.learning.edge_prediction import (
-    BaseEdgeEmbeddingRecommender,
-    Node2VecEdgeEmbeddingRecommender,
-    EdgeEmbeddingScheme,
-)
-from apaa.learning.evaluation.quality_measure import (
-    QualityMeasureClassification,
-    QualityMeasureRecommender,
-)
+import apaa.learning.recommendation as recommendation
+import apaa.learning.evaluation as evaluation
 from apaa.learning.node_embedding import WordFrequencyWeight
-from apaa.learning.recommendation.base import BaseRecommender
-from apaa.learning.recommendation.dummy import DummyRecommender
-from apaa.learning.recommendation.embedding import (
-    BagOfWordsRecommender,
-    TFIDFRecommender,
-    WordEmbeddingRecommender,
-    EmbeddingAnalogiesRecommender,
-)
+
 import apaa.helpers as helpers
 
 
@@ -51,7 +37,7 @@ Dataset = tuple[
 def learn_and_predict(
     library_path: str,
     dataset: Dataset,
-    model_class: Type[BaseRecommender],
+    model_class: Type[recommendation.BaseRecommender],
     model_args: Optional[Dict[str, Any]] = None,
     fit_args: Optional[Dict[str, Any]] = None,
     actual_k: int = 5,
@@ -154,18 +140,18 @@ def check_learn_predict(
 
 def learn(
     model_dump_file: str,
-    model_class: Type[BaseRecommender],
+    model_class: Type[recommendation.BaseRecommender],
     model_args: Dict[str, Any],
     train_graph: nx.MultiDiGraph,
     id_to_def: Dict[Node, agda.Definition],
     fit_args: Dict[str, Any],
     meta_file: str,
-) -> tuple[bool, Optional[BaseRecommender], Optional[float], Optional[bool]]:
+) -> tuple[bool, Optional[recommendation.BaseRecommender], Optional[float], Optional[bool]]:
     will_learn = not os.path.exists(model_dump_file)
     if will_learn:
         LOGGER.info("Learning models")
         t0_learn = time.time()
-        model: BaseRecommender = model_class(**model_args)
+        model: recommendation.BaseRecommender = model_class(**model_args)
         model.fit(train_graph, id_to_def, **fit_args)
         t1_learn = time.time()
         # model.dump(model_dump_file)
@@ -192,23 +178,23 @@ def predict_and_evaluate(
     positive_edges: List[Tuple[Node, Node, helpers.EdgeType]],
     negative_edges: List[Tuple[Node, Node, helpers.EdgeType]],
     actual_k: int,
-    model: BaseRecommender,
+    model: recommendation.BaseRecommender,
     compute_recommender_style: bool,
     compute_link_prediction_style: bool,
     results_file: str,
 ):
     LOGGER.info("Predict and evaluate")
-    is_edge_embedding = isinstance(model, BaseEdgeEmbeddingRecommender)
+    is_edge_embedding = isinstance(model, recommendation.BaseEdgeEmbeddingRecommender)
     predictions_recommender: Dict[Node, List[Tuple[float, Node]]] = {}
     actual_neighbours_recommender: Dict[Node, List[Tuple[float, Node]]] = {}
-    measures_recommender = QualityMeasureRecommender(
+    measures_recommender = evaluation.QualityMeasureRecommender(
         kg, train_graph, test_definitions, actual_k
     )
 
     results_classification: Dict[
         Tuple[Node, Node], Tuple[SupportsFloat, SupportsFloat]
     ] = {}
-    measures_classification = QualityMeasureClassification()
+    measures_classification = evaluation.QualityMeasureClassification()
     if compute_recommender_style:
         evaluate_recommender_style(
             test_definitions,
@@ -241,8 +227,8 @@ def predict_and_evaluate(
 
 def evaluate_recommender_style(
     test_defs: dict[Node, agda.Definition],
-    model: BaseRecommender,
-    measures_recommender: QualityMeasureRecommender,
+    model: recommendation.BaseRecommender,
+    measures_recommender: evaluation.QualityMeasureRecommender,
     actual_neighbours_recommender: dict[Node, list[tuple[float, Node]]],
     predictions_recommender: dict[Node, list[tuple[float, Node]]],
     actual_k: int,
@@ -258,8 +244,8 @@ def evaluate_classification_style(
     defs_for_training: dict[Node, agda.Definition],
     positive_edges: List[Tuple[Node, Node, helpers.EdgeType]],
     negative_edges: List[Tuple[Node, Node, helpers.EdgeType]],
-    model: BaseRecommender,
-    measures_classification: QualityMeasureClassification,
+    model: recommendation.BaseRecommender,
+    measures_classification: evaluation.QualityMeasureClassification,
     results_classification: dict[
         tuple[Node, Node], tuple[SupportsFloat, SupportsFloat]
     ],
@@ -291,11 +277,11 @@ def report_results(
     results_file: str,
     predictions_recommender: Dict[Node, List[Tuple[float, Node]]],
     actual_neighbours_recommender: Dict[Node, List[Tuple[float, Node]]],
-    measures_recommender: QualityMeasureRecommender,
+    measures_recommender: evaluation.QualityMeasureRecommender,
     results_classification: Dict[
         Tuple[Node, Node], Tuple[SupportsFloat, SupportsFloat]
     ],
-    measures_classification: QualityMeasureClassification,
+    measures_classification: evaluation.QualityMeasureClassification,
 ):
     with open(results_file, "w", encoding="utf-8") as f:
         print(str(measures_recommender), file=f)
@@ -318,7 +304,7 @@ def report_results(
 
 def create_experiment_meta_file(
     meta_file: str,
-    model_class: Type[BaseRecommender],
+    model_class: Type[recommendation.BaseRecommender],
     model_args: dict[str, Any],
     fit_args: dict[str, Any],
     model_was_learned: bool,
@@ -352,25 +338,25 @@ def learn_recommender_models(
         LOGGER.info("Dummy models ...")
         dummy_configs = create_no_arg_configs()
         learn_one_group(
-            DummyRecommender, library_path, dataset, p_def_to_keep, dummy_configs, force
+            recommendation.DummyRecommender, library_path, dataset, p_def_to_keep, dummy_configs, force
         )
     if bow:
         LOGGER.info("BOW models ...")
         bow_configs = create_bow_configs()
         learn_one_group(
-            BagOfWordsRecommender, library_path, dataset, p_def_to_keep, bow_configs, force
+            recommendation.BagOfWordsRecommender, library_path, dataset, p_def_to_keep, bow_configs, force
         )
     if tfidf:
         LOGGER.info("TFIDF models ...")
         tfidf_configs = create_tfidf_configs()
         learn_one_group(
-            TFIDFRecommender, library_path, dataset, p_def_to_keep, tfidf_configs, force
+            recommendation.TFIDFRecommender, library_path, dataset, p_def_to_keep, tfidf_configs, force
         )
     if word_embedding:
         LOGGER.info("Word embedding models ...")
         we_configs = create_word_embedding_configs()
         learn_one_group(
-            WordEmbeddingRecommender,
+            recommendation.WordEmbeddingRecommender,
             library_path,
             dataset,
             p_def_to_keep,
@@ -381,7 +367,7 @@ def learn_recommender_models(
         LOGGER.info("Analogies models ...")
         ana_configs = create_analogy_configs()
         learn_one_group(
-            EmbeddingAnalogiesRecommender,
+            recommendation.EmbeddingAnalogiesRecommender,
             library_path,
             dataset,
             p_def_to_keep,
@@ -392,7 +378,7 @@ def learn_recommender_models(
         LOGGER.info("Node to vec ...")
         node_to_vec_configs = create_node_to_vec_configs()
         learn_one_group(
-            Node2VecEdgeEmbeddingRecommender,
+            recommendation.Node2VecEdgeEmbeddingRecommender,
             library_path,
             dataset,
             p_def_to_keep,
@@ -408,7 +394,7 @@ def create_no_arg_configs() -> Configs:
 
 def create_node_to_vec_configs() -> Configs:
     configs: Configs = []
-    edge_schemess = [EdgeEmbeddingScheme.CONCATENATION, EdgeEmbeddingScheme.MEAN]
+    edge_schemess = [recommendation.EdgeEmbeddingScheme.CONCATENATION, recommendation.EdgeEmbeddingScheme.MEAN]
     ps = [1.0, 2.0]
     qs = [1.0, 2.0]
     vector_sizes = [32, 64]
@@ -503,7 +489,7 @@ def create_tfidf_word_embedding_configs():
 
 
 def learn_one_group(
-    model_type: Type[BaseRecommender],
+    model_type: Type[recommendation.BaseRecommender],
     library_path: str,
     dataset: Dataset,
     p_def_to_keep: float,
@@ -526,16 +512,16 @@ def learn_one_group(
         gc.collect()
 
 
-if __name__ == "__main__":
-    learn_recommender_models(
-        "your/path/to/mathlib",  # change this
-        dummy=True,
-        bow=True,
-        tfidf=True,
-        word_embedding=True,
-        analogies=True,
-        node_to_vec=True,
-        p_def_to_keep=0.1,
-        force=False,
-    )
-    LOGGER.info("Done")
+# if __name__ == "__main__":
+#     learn_recommender_models(
+#         "your/path/to/mathlib",  # change this
+#         dummy=True,
+#         bow=True,
+#         tfidf=True,
+#         word_embedding=True,
+#         analogies=True,
+#         node_to_vec=True,
+#         p_def_to_keep=0.1,
+#         force=False,
+#     )
+#     LOGGER.info("Done")

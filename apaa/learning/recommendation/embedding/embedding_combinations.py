@@ -6,7 +6,8 @@ from apaa.learning.node_embedding.word import (
     WordFrequencyWeight,
 )
 from apaa.learning.recommendation.embedding.base import KNNNodeEmbeddingRecommender
-from apaa.other.helpers import helpers.MyTypes
+import apaa.helpers as helpers
+import apaa.learning as learning
 
 
 array2d = helpers.MyTypes.ARRAY_2D

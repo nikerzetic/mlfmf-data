@@ -1,8 +1,9 @@
 from sklearn.neighbors import VALID_METRICS
-from apaa.data.structures.agda_tree import agda.Definition
 from apaa.learning.node_embedding.base import NodeEmbeddingBase
 from apaa.learning.recommendation.base import KNNRecommender
-from apaa.other.helpers import helpers.MyTypes
+
+import apaa.data.structures.agda as agda
+import apaa.helpers as helpers
 
 
 import networkx as nx

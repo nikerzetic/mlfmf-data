@@ -5,12 +5,13 @@ import networkx as nx
 import numpy as np
 import tqdm
 
-from apaa.data.structures.agda_tree import agda.Definition
 from apaa.learning.node_embedding.word import BagOfWordsEmbedder, TFIDFEmbedder
 from apaa.learning.recommendation.base import KNNRecommender, Node
 from apaa.learning.recommendation.embedding.base import KNNNodeEmbeddingRecommender
 from apaa.learning.recommendation.embedding.numba_distance import jaccard
-from apaa.other.helpers import helpers.MyTypes
+
+import apaa.data.structures.agda as agda
+import apaa.helpers as helpers
 
 int_array = helpers.MyTypes.INT_ARRAY_1D
 array1d = helpers.MyTypes.ARRAY_1D

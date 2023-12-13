@@ -7,11 +7,11 @@ from node2vec import Node2Vec
 from sklearn.feature_extraction.text import TfidfVectorizer
 import os
 from gensim.models import Word2Vec
-from apaa.data.structures.agda_tree import agda.Definition
 from apaa.learning.node_embedding.base import NodeEmbeddingBase, Node, array2d
 from apaa.learning.node_embedding.walk_generation import Walker
 
-from apaa.other.helpers import helpers.MyTypes, helpers.Other
+import apaa.data.structures.agda as agda
+import apaa.helpers as helpers
 
 
 LOGGER = helpers.create_logger(__file__)
