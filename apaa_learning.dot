@@ -1,0 +1,500 @@
+digraph G {
+concentrate=true;
+splines="ortho";
+rankdir="LR";
+subgraph legend{
+    rank = min;
+    label = "legend";
+    Legend [shape=none, margin=0, label = <
+        <table cellspacing="0" cellpadding="0" border="1"><tr><td>Code2flow Legend</td></tr><tr><td>
+        <table cellspacing="0">
+        <tr><td>Regular function</td><td width="50px" bgcolor='#cccccc'></td></tr>
+        <tr><td>Trunk function (nothing calls this)</td><td bgcolor='#966F33'></td></tr>
+        <tr><td>Leaf function (this calls nothing else)</td><td bgcolor='#6db33f'></td></tr>
+        <tr><td>Function call</td><td><font color='black'>&#8594;</font></td></tr>
+        </table></td></tr></table>
+        >];
+}node_50025446 [label="86: _check_known()" name="base::BaseEdgeEmbeddingRecommender._check_known" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_eec6d43c [label="183: _load_false_positives_file()" name="base::BaseEdgeEmbeddingRecommender._load_false_positives_file" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_537c9553 [label="67: embed_edge()" name="base::BaseEdgeEmbeddingRecommender.embed_edge" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_d5f32e0a [label="83: embed_edges()" name="base::BaseEdgeEmbeddingRecommender.embed_edges" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_4db37ffe [label="60: embed_nodes()" name="base::BaseEdgeEmbeddingRecommender.embed_nodes" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_6e8c57a5 [label="91: fit()" name="base::BaseEdgeEmbeddingRecommender.fit" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_cd77ca25 [label="103: fit_predictive_model()" name="base::BaseEdgeEmbeddingRecommender.fit_predictive_model" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_d9ddbb7c [label="237: predict_edges()" name="base::BaseEdgeEmbeddingRecommender.predict_edges" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_ff7eaf7d [label="218: predict_one()" name="base::BaseEdgeEmbeddingRecommender.predict_one" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_e9809ceb [label="228: predict_one_edge()" name="base::BaseEdgeEmbeddingRecommender.predict_one_edge" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_3b4b128f [label="135: sample_edges()" name="base::BaseEdgeEmbeddingRecommender.sample_edges" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_5bccbe9f [label="15: __init__()" name="base::BaseRecommender.__init__" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_9e8fe3d9 [label="22: _check_k()" name="base::BaseRecommender._check_k" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_3a1d9129 [label="148: load()" name="base::BaseRecommender.load" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_985d2aad [label="35: n_predictions()" name="base::BaseRecommender.n_predictions" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_0d8e0244 [label="113: postprocess_predictions()" name="base::BaseRecommender.postprocess_predictions" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_1c1baee3 [label="49: predict()" name="base::BaseRecommender.predict" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_0f79b6a4 [label="66: predict_one()" name="base::BaseRecommender.predict_one" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_c06e2a9d [label="72: predict_one_edge()" name="base::BaseRecommender.predict_one_edge" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_ded9cf18 [label="143: unpickle()" name="base::BaseRecommender.unpickle" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_5de98919 [label="56: __init__()" name="base::EmbeddingConcatenator.__init__" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_980235b0 [label="89: _get_node_order()" name="base::EmbeddingConcatenator._get_node_order" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_24f1b0df [label="63: embed()" name="base::EmbeddingConcatenator.embed" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_57a536d1 [label="90: compute_distances()" name="base::KNNNodeEmbeddingRecommender.compute_distances" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_1e421c29 [label="49: embed_documents()" name="base::KNNNodeEmbeddingRecommender.embed_documents" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_fa2d238e [label="35: fit()" name="base::KNNNodeEmbeddingRecommender.fit" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_ed2324b8 [label="76: predict_one()" name="base::KNNNodeEmbeddingRecommender.predict_one" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_2d1b0bde [label="195: distances_to_tuples()" name="base::KNNRecommender.distances_to_tuples" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_52a2996b [label="172: find_neighbours_for_existing()" name="base::KNNRecommender.find_neighbours_for_existing" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_a04d41f8 [label="162: initialize_examples_and_distance_matrix()" name="base::KNNRecommender.initialize_examples_and_distance_matrix" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_53bd0b57 [label="46: embed()" name="base::NodeEmbeddingBase.embed" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_63a08f69 [label="37: fit()" name="base::NodeEmbeddingBase.fit" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_b318369a [label="26: nodes()" name="base::NodeEmbeddingBase.nodes" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_43489bde [label="29: update_fields()" name="base::NodeEmbeddingBase.update_fields" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_6a65a5bc [label="35: predict_proba()" name="base::ScikitLikePredictiveModel.predict_proba" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_f5d02425 [label="41: compute_in_degrees()" name="dummy::DummyRecommender.compute_in_degrees" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_57218c3b [label="21: fit()" name="dummy::DummyRecommender.fit" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_d2b75af8 [label="52: predict_one()" name="dummy::DummyRecommender.predict_one" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_a026ef36 [label="17: __init__()" name="embedding_combinations::TFIDFAndWord2VecEmbeddingRecommender.__init__" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_cd955033 [label="25: __init__()" name="evaluation::QualityMeasureRecommender.__init__" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_4f67b32c [label="85: _find_actual_neighbours()" name="evaluation::QualityMeasureRecommender._find_actual_neighbours" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_54dea235 [label="151: compute_test_graph()" name="evaluation::QualityMeasureRecommender.compute_test_graph" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_d15a3c06 [label="44: update()" name="evaluation::QualityMeasureRecommender.update" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_0e881e7a [label="22: __init__()" name="graph::NodeToVecEmbedding.__init__" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_1e7fd12e [label="51: _get_workers()" name="graph::NodeToVecEmbedding._get_workers" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_524af2a1 [label="101: compute_efficient_walks()" name="graph::NodeToVecEmbedding.compute_efficient_walks" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_ad2ddf12 [label="191: convert_node_names()" name="graph::NodeToVecEmbedding.convert_node_names" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_dbbeb063 [label="57: embed()" name="graph::NodeToVecEmbedding.embed" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_23ac3aa5 [label="107: get_vector_file_name()" name="graph::NodeToVecEmbedding.get_vector_file_name" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_e95e57fc [label="112: kwarg_to_string()" name="graph::NodeToVecEmbedding.kwarg_to_string" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_20a0b111 [label="131: to_undirected()" name="graph::NodeToVecEmbedding.to_undirected" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_54acecaf [label="21: __init__()" name="mixed::TFIDFAndNode2VecEmbeddingRecommender.__init__" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_c7396967 [label="41: embed_nodes()" name="mixed::TFIDFAndNode2VecEmbeddingRecommender.embed_nodes" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_be9acb86 [label="50: __init__()" name="mixed::Word2VecAndNode2VecEmbeddingRecommender.__init__" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_959804a4 [label="78: embed_nodes()" name="mixed::Word2VecAndNode2VecEmbeddingRecommender.embed_nodes" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_50c9a250 [label="20: __init__()" name="node_to_vec::Node2VecEdgeEmbeddingRecommender.__init__" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_7eea70db [label="40: embed_nodes()" name="node_to_vec::Node2VecEdgeEmbeddingRecommender.embed_nodes" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_9b4a914a [label="152: distance_numba()" name="numba_distance::Jaccard.distance_numba" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_fc5ae506 [label="42: find_with_bisection()" name="numba_distance::find_with_bisection" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_beeaf394 [label="58: jaccard()" name="numba_distance::jaccard" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_9147759e [label="9: merge()" name="numba_distance::merge" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_aed2f9c5 [label="92: test_find_with_bisection()" name="numba_distance::test_find_with_bisection" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_55054aa8 [label="102: test_jaccard()" name="numba_distance::test_jaccard" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_7bebea1c [label="93: _get_total_weight_of_edges()" name="two_hops::TwoHops._get_total_weight_of_edges" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_f6868e1a [label="104: edge_weight()" name="two_hops::TwoHops.edge_weight" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_f9dff215 [label="96: node_weight()" name="two_hops::TwoHops.node_weight" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_37c55cf2 [label="114: path_weight()" name="two_hops::TwoHops.path_weight" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_e935b217 [label="62: predict_one()" name="two_hops::TwoHops.predict_one" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_125fde5e [label="65: __init__()" name="walk_generation::Walker.__init__" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_bc0dfe63 [label="78: _postprocess_walk()" name="walk_generation::Walker._postprocess_walk" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_7f66a22c [label="70: get_walks()" name="walk_generation::Walker.get_walks" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_966b76e8 [label="28: bisect_left()" name="walk_generation::bisect_left" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_70825aa2 [label="10: efficient_transiction_matrix()" name="walk_generation::efficient_transiction_matrix" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_c23b8144 [label="41: get_walks()" name="walk_generation::get_walks" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_4105c1c3 [label="89: test_bisection()" name="walk_generation::test_bisection" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_7b259b94 [label="49: __init__()" name="word::BagOfWordsEmbedder.__init__" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_5f8e7d75 [label="52: embed()" name="word::BagOfWordsEmbedder.embed" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_61135f38 [label="105: __init__()" name="word::DeepWordEmbedder.__init__" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_a002a183 [label="122: _get_default_vector()" name="word::DeepWordEmbedder._get_default_vector" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_498ce0e3 [label="153: definition_vector()" name="word::DeepWordEmbedder.definition_vector" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_be15e3ce [label="167: embed()" name="word::DeepWordEmbedder.embed" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_932c3372 [label="125: get_word_embedding()" name="word::DeepWordEmbedder.get_word_embedding" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_7a9a96c0 [label="133: word_weight()" name="word::DeepWordEmbedder.word_weight" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_6d6d24a7 [label="74: __init__()" name="word::TFIDFEmbedder.__init__" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_0362a7b4 [label="77: embed()" name="word::TFIDFEmbedder.embed" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_f487efd0 [label="21: definition_to_document()" name="word::WordEmbedding.definition_to_document" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_d3230f87 [label="29: get_embeddings()" name="word::WordEmbedding.get_embeddings" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_b5949572 [label="100: needs_tfidf()" name="word::WordFrequencyWeight.needs_tfidf" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_38d1661a [label="21: __init__()" name="word_simple::BagOfWordsRecommender.__init__" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_22b0d4fe [label="26: fit()" name="word_simple::BagOfWordsRecommender.fit" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_e94e0af4 [label="58: predict_one()" name="word_simple::BagOfWordsRecommender.predict_one" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_08b2c3f7 [label="71: __init__()" name="word_simple::TFIDFRecommender.__init__" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_551d845c [label="170: _compute_analogy_candidates()" name="word_vectors::EmbeddingAnalogiesRecommender._compute_analogy_candidates" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_8c74f9b2 [label="144: _compute_node_to_module()" name="word_vectors::EmbeddingAnalogiesRecommender._compute_node_to_module" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_57515cd9 [label="88: fit()" name="word_vectors::EmbeddingAnalogiesRecommender.fit" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_b72e8a13 [label="105: predict_one()" name="word_vectors::EmbeddingAnalogiesRecommender.predict_one" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_069153f3 [label="27: __init__()" name="word_vectors::WordEmbeddingRecommender.__init__" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_537c9553 -> node_50025446 [color="#009E73" penwidth="2"];
+node_d5f32e0a -> node_537c9553 [color="#56B4E9" penwidth="2"];
+node_6e8c57a5 -> node_4db37ffe [color="#0072B2" penwidth="2"];
+node_6e8c57a5 -> node_cd77ca25 [color="#0072B2" penwidth="2"];
+node_cd77ca25 -> node_537c9553 [color="#0072B2" penwidth="2"];
+node_cd77ca25 -> node_537c9553 [color="#0072B2" penwidth="2"];
+node_cd77ca25 -> node_6e8c57a5 [color="#0072B2" penwidth="2"];
+node_cd77ca25 -> node_3b4b128f [color="#0072B2" penwidth="2"];
+node_d9ddbb7c -> node_d5f32e0a [color="#F0E442" penwidth="2"];
+node_d9ddbb7c -> node_0d8e0244 [color="#F0E442" penwidth="2"];
+node_d9ddbb7c -> node_6a65a5bc [color="#F0E442" penwidth="2"];
+node_ff7eaf7d -> node_d9ddbb7c [color="#0072B2" penwidth="2"];
+node_e9809ceb -> node_d9ddbb7c [color="#009E73" penwidth="2"];
+node_3b4b128f -> node_eec6d43c [color="#CC79A7" penwidth="2"];
+node_3b4b128f -> node_b318369a [color="#CC79A7" penwidth="2"];
+node_5bccbe9f -> node_9e8fe3d9 [color="#CC79A7" penwidth="2"];
+node_3a1d9129 -> node_ded9cf18 [color="#E69F00" penwidth="2"];
+node_1c1baee3 -> node_0f79b6a4 [color="#009E73" penwidth="2"];
+node_c06e2a9d -> node_0f79b6a4 [color="#0072B2" penwidth="2"];
+node_24f1b0df -> node_980235b0 [color="#CC79A7" penwidth="2"];
+node_24f1b0df -> node_980235b0 [color="#CC79A7" penwidth="2"];
+node_1e421c29 -> node_fa2d238e [color="#E69F00" penwidth="2"];
+node_1e421c29 -> node_a04d41f8 [color="#E69F00" penwidth="2"];
+node_fa2d238e -> node_1e421c29 [color="#D55E00" penwidth="2"];
+node_ed2324b8 -> node_0d8e0244 [color="#000000" penwidth="2"];
+node_ed2324b8 -> node_2d1b0bde [color="#000000" penwidth="2"];
+node_2d1b0bde -> node_985d2aad [color="#D55E00" penwidth="2"];
+node_52a2996b -> node_2d1b0bde [color="#009E73" penwidth="2"];
+node_63a08f69 -> node_53bd0b57 [color="#E69F00" penwidth="2"];
+node_63a08f69 -> node_43489bde [color="#E69F00" penwidth="2"];
+node_57218c3b -> node_f5d02425 [color="#009E73" penwidth="2"];
+node_d2b75af8 -> node_985d2aad [color="#000000" penwidth="2"];
+node_d2b75af8 -> node_0d8e0244 [color="#000000" penwidth="2"];
+node_a026ef36 -> node_5de98919 [color="#D55E00" penwidth="2"];
+node_a026ef36 -> node_61135f38 [color="#D55E00" penwidth="2"];
+node_a026ef36 -> node_6d6d24a7 [color="#D55E00" penwidth="2"];
+node_cd955033 -> node_54dea235 [color="#009E73" penwidth="2"];
+node_4f67b32c -> node_b318369a [color="#F0E442" penwidth="2"];
+node_d15a3c06 -> node_4f67b32c [color="#D55E00" penwidth="2"];
+node_0e881e7a -> node_1e7fd12e [color="#56B4E9" penwidth="2"];
+node_524af2a1 -> node_125fde5e [color="#E69F00" penwidth="2"];
+node_dbbeb063 -> node_b318369a [color="#009E73" penwidth="2"];
+node_dbbeb063 -> node_b318369a [color="#009E73" penwidth="2"];
+node_dbbeb063 -> node_524af2a1 [color="#009E73" penwidth="2"];
+node_dbbeb063 -> node_23ac3aa5 [color="#009E73" penwidth="2"];
+node_dbbeb063 -> node_20a0b111 [color="#009E73" penwidth="2"];
+node_23ac3aa5 -> node_b318369a [color="#0072B2" penwidth="2"];
+node_23ac3aa5 -> node_e95e57fc [color="#0072B2" penwidth="2"];
+node_e95e57fc -> node_e95e57fc [color="#F0E442" penwidth="2"];
+node_e95e57fc -> node_e95e57fc [color="#F0E442" penwidth="2"];
+node_20a0b111 -> node_ad2ddf12 [color="#E69F00" penwidth="2"];
+node_54acecaf -> node_5de98919 [color="#CC79A7" penwidth="2"];
+node_54acecaf -> node_0e881e7a [color="#CC79A7" penwidth="2"];
+node_54acecaf -> node_6d6d24a7 [color="#CC79A7" penwidth="2"];
+node_c7396967 -> node_6e8c57a5 [color="#CC79A7" penwidth="2"];
+node_be9acb86 -> node_5de98919 [color="#D55E00" penwidth="2"];
+node_be9acb86 -> node_0e881e7a [color="#D55E00" penwidth="2"];
+node_be9acb86 -> node_61135f38 [color="#D55E00" penwidth="2"];
+node_959804a4 -> node_6e8c57a5 [color="#F0E442" penwidth="2"];
+node_50c9a250 -> node_0e881e7a [color="#000000" penwidth="2"];
+node_7eea70db -> node_6e8c57a5 [color="#009E73" penwidth="2"];
+node_9b4a914a -> node_beeaf394 [color="#56B4E9" penwidth="2"];
+node_beeaf394 -> node_fc5ae506 [color="#F0E442" penwidth="2"];
+node_beeaf394 -> node_fc5ae506 [color="#F0E442" penwidth="2"];
+node_beeaf394 -> node_9147759e [color="#F0E442" penwidth="2"];
+node_aed2f9c5 -> node_fc5ae506 [color="#0072B2" penwidth="2"];
+node_55054aa8 -> node_beeaf394 [color="#000000" penwidth="2"];
+node_e935b217 -> node_0d8e0244 [color="#CC79A7" penwidth="2"];
+node_e935b217 -> node_7bebea1c [color="#CC79A7" penwidth="2"];
+node_e935b217 -> node_f6868e1a [color="#CC79A7" penwidth="2"];
+node_e935b217 -> node_f6868e1a [color="#CC79A7" penwidth="2"];
+node_e935b217 -> node_f9dff215 [color="#CC79A7" penwidth="2"];
+node_e935b217 -> node_37c55cf2 [color="#CC79A7" penwidth="2"];
+node_7f66a22c -> node_bc0dfe63 [color="#F0E442" penwidth="2"];
+node_7f66a22c -> node_70825aa2 [color="#F0E442" penwidth="2"];
+node_7f66a22c -> node_c23b8144 [color="#F0E442" penwidth="2"];
+node_c23b8144 -> node_966b76e8 [color="#F0E442" penwidth="2"];
+node_4105c1c3 -> node_966b76e8 [color="#009E73" penwidth="2"];
+node_4105c1c3 -> node_966b76e8 [color="#009E73" penwidth="2"];
+node_5f8e7d75 -> node_d3230f87 [color="#0072B2" penwidth="2"];
+node_498ce0e3 -> node_a002a183 [color="#009E73" penwidth="2"];
+node_498ce0e3 -> node_932c3372 [color="#009E73" penwidth="2"];
+node_498ce0e3 -> node_7a9a96c0 [color="#009E73" penwidth="2"];
+node_be15e3ce -> node_a002a183 [color="#D55E00" penwidth="2"];
+node_be15e3ce -> node_498ce0e3 [color="#D55E00" penwidth="2"];
+node_be15e3ce -> node_d3230f87 [color="#D55E00" penwidth="2"];
+node_be15e3ce -> node_b5949572 [color="#D55E00" penwidth="2"];
+node_932c3372 -> node_a002a183 [color="#56B4E9" penwidth="2"];
+node_7a9a96c0 -> node_b5949572 [color="#000000" penwidth="2"];
+node_0362a7b4 -> node_d3230f87 [color="#F0E442" penwidth="2"];
+node_d3230f87 -> node_f487efd0 [color="#CC79A7" penwidth="2"];
+node_38d1661a -> node_7b259b94 [color="#56B4E9" penwidth="2"];
+node_22b0d4fe -> node_a04d41f8 [color="#D55E00" penwidth="2"];
+node_22b0d4fe -> node_beeaf394 [color="#D55E00" penwidth="2"];
+node_22b0d4fe -> node_22b0d4fe [color="#D55E00" penwidth="2"];
+node_e94e0af4 -> node_0d8e0244 [color="#F0E442" penwidth="2"];
+node_e94e0af4 -> node_2d1b0bde [color="#F0E442" penwidth="2"];
+node_e94e0af4 -> node_beeaf394 [color="#F0E442" penwidth="2"];
+node_08b2c3f7 -> node_6d6d24a7 [color="#CC79A7" penwidth="2"];
+node_57515cd9 -> node_1e421c29 [color="#E69F00" penwidth="2"];
+node_57515cd9 -> node_551d845c [color="#E69F00" penwidth="2"];
+node_57515cd9 -> node_8c74f9b2 [color="#E69F00" penwidth="2"];
+node_b72e8a13 -> node_0d8e0244 [color="#009E73" penwidth="2"];
+node_b72e8a13 -> node_57a536d1 [color="#009E73" penwidth="2"];
+node_b72e8a13 -> node_2d1b0bde [color="#009E73" penwidth="2"];
+node_069153f3 -> node_61135f38 [color="#009E73" penwidth="2"];
+subgraph cluster_eabdbb43 {
+    label="File: base";
+    name="base";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_e6fea40f {
+        node_b318369a node_43489bde node_63a08f69 node_53bd0b57;
+        label="Class: NodeEmbeddingBase";
+        name="NodeEmbeddingBase";
+        style="filled";
+        graph[style=dotted];
+    };
+    subgraph cluster_a34fbef9 {
+        node_5de98919 node_24f1b0df node_980235b0;
+        label="Class: EmbeddingConcatenator";
+        name="EmbeddingConcatenator";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_5372ba5e {
+    label="File: base";
+    name="base";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_24ed9375 {
+        node_5bccbe9f node_9e8fe3d9 node_985d2aad node_1c1baee3 node_0f79b6a4 node_c06e2a9d node_0d8e0244 node_ded9cf18 node_3a1d9129;
+        label="Class: BaseRecommender";
+        name="BaseRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+    subgraph cluster_08c837d4 {
+        node_a04d41f8 node_52a2996b node_2d1b0bde;
+        label="Class: KNNRecommender";
+        name="KNNRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_7c8fc941 {
+    label="File: base";
+    name="base";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_0a352b98 {
+        node_fa2d238e node_1e421c29 node_ed2324b8 node_57a536d1;
+        label="Class: KNNNodeEmbeddingRecommender";
+        name="KNNNodeEmbeddingRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_4ebdc288 {
+    label="File: base";
+    name="base";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_299db315 {
+        node_6a65a5bc;
+        label="Class: ScikitLikePredictiveModel";
+        name="ScikitLikePredictiveModel";
+        style="filled";
+        graph[style=dotted];
+    };
+    subgraph cluster_45accc9b {
+        node_4db37ffe node_537c9553 node_d5f32e0a node_50025446 node_6e8c57a5 node_cd77ca25 node_3b4b128f node_eec6d43c node_ff7eaf7d node_e9809ceb node_d9ddbb7c;
+        label="Class: BaseEdgeEmbeddingRecommender";
+        name="BaseEdgeEmbeddingRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_e99faa38 {
+    label="File: dummy";
+    name="dummy";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_236458c9 {
+        node_57218c3b node_f5d02425 node_d2b75af8;
+        label="Class: DummyRecommender";
+        name="DummyRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_f163d8bf {
+    label="File: embedding_combinations";
+    name="embedding_combinations";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_07a20875 {
+        node_a026ef36;
+        label="Class: TFIDFAndWord2VecEmbeddingRecommender";
+        name="TFIDFAndWord2VecEmbeddingRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_8b78cf1e {
+    label="File: evaluation";
+    name="evaluation";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_b0b60097 {
+        node_cd955033 node_d15a3c06 node_4f67b32c node_54dea235;
+        label="Class: QualityMeasureRecommender";
+        name="QualityMeasureRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_4d2a15e5 {
+    label="File: graph";
+    name="graph";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_92b6f6a2 {
+        node_0e881e7a node_1e7fd12e node_dbbeb063 node_524af2a1 node_23ac3aa5 node_e95e57fc node_20a0b111 node_ad2ddf12;
+        label="Class: NodeToVecEmbedding";
+        name="NodeToVecEmbedding";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_c7222112 {
+    label="File: mixed";
+    name="mixed";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_28d067ff {
+        node_54acecaf node_c7396967;
+        label="Class: TFIDFAndNode2VecEmbeddingRecommender";
+        name="TFIDFAndNode2VecEmbeddingRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+    subgraph cluster_38ad3d34 {
+        node_be9acb86 node_959804a4;
+        label="Class: Word2VecAndNode2VecEmbeddingRecommender";
+        name="Word2VecAndNode2VecEmbeddingRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_af85b1d1 {
+    label="File: node_to_vec";
+    name="node_to_vec";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_382d9b92 {
+        node_50c9a250 node_7eea70db;
+        label="Class: Node2VecEdgeEmbeddingRecommender";
+        name="Node2VecEdgeEmbeddingRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_755ae69e {
+    node_9147759e node_fc5ae506 node_beeaf394 node_aed2f9c5 node_55054aa8;
+    label="File: numba_distance";
+    name="numba_distance";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_ee9d851f {
+        node_9b4a914a;
+        label="Class: Jaccard";
+        name="Jaccard";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_f4e890b8 {
+    label="File: two_hops";
+    name="two_hops";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_d17462e7 {
+        node_e935b217 node_7bebea1c node_f9dff215 node_f6868e1a node_37c55cf2;
+        label="Class: TwoHops";
+        name="TwoHops";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_8466c2c3 {
+    node_70825aa2 node_966b76e8 node_c23b8144 node_4105c1c3;
+    label="File: walk_generation";
+    name="walk_generation";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_df706379 {
+        node_125fde5e node_7f66a22c node_bc0dfe63;
+        label="Class: Walker";
+        name="Walker";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_51cbf46e {
+    label="File: word";
+    name="word";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_8833f00a {
+        node_f487efd0 node_d3230f87;
+        label="Class: WordEmbedding";
+        name="WordEmbedding";
+        style="filled";
+        graph[style=dotted];
+    };
+    subgraph cluster_f2d4cfcf {
+        node_7b259b94 node_5f8e7d75;
+        label="Class: BagOfWordsEmbedder";
+        name="BagOfWordsEmbedder";
+        style="filled";
+        graph[style=dotted];
+    };
+    subgraph cluster_6d8e8aff {
+        node_6d6d24a7 node_0362a7b4;
+        label="Class: TFIDFEmbedder";
+        name="TFIDFEmbedder";
+        style="filled";
+        graph[style=dotted];
+    };
+    subgraph cluster_1e84839e {
+        node_b5949572;
+        label="Class: WordFrequencyWeight";
+        name="WordFrequencyWeight";
+        style="filled";
+        graph[style=dotted];
+    };
+    subgraph cluster_c1047886 {
+        node_61135f38 node_a002a183 node_932c3372 node_7a9a96c0 node_498ce0e3 node_be15e3ce;
+        label="Class: DeepWordEmbedder";
+        name="DeepWordEmbedder";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_1b7d5d7a {
+    label="File: word_simple";
+    name="word_simple";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_bae11b4e {
+        node_38d1661a node_22b0d4fe node_e94e0af4;
+        label="Class: BagOfWordsRecommender";
+        name="BagOfWordsRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+    subgraph cluster_1e35f30e {
+        node_08b2c3f7;
+        label="Class: TFIDFRecommender";
+        name="TFIDFRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+subgraph cluster_f078b9ac {
+    label="File: word_vectors";
+    name="word_vectors";
+    style="filled";
+    graph[style=dotted];
+    subgraph cluster_f4638d7c {
+        node_069153f3;
+        label="Class: WordEmbeddingRecommender";
+        name="WordEmbeddingRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+    subgraph cluster_34eade1b {
+        node_57515cd9 node_b72e8a13 node_8c74f9b2 node_551d845c;
+        label="Class: EmbeddingAnalogiesRecommender";
+        name="EmbeddingAnalogiesRecommender";
+        style="filled";
+        graph[style=dotted];
+    };
+};
+}

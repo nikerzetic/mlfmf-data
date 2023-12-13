@@ -1,0 +1,61 @@
+digraph G {
+concentrate=true;
+splines="ortho";
+rankdir="LR";
+subgraph legend{
+    rank = min;
+    label = "legend";
+    Legend [shape=none, margin=0, label = <
+        <table cellspacing="0" cellpadding="0" border="1"><tr><td>Code2flow Legend</td></tr><tr><td>
+        <table cellspacing="0">
+        <tr><td>Regular function</td><td width="50px" bgcolor='#cccccc'></td></tr>
+        <tr><td>Trunk function (nothing calls this)</td><td bgcolor='#966F33'></td></tr>
+        <tr><td>Leaf function (this calls nothing else)</td><td bgcolor='#6db33f'></td></tr>
+        <tr><td>Function call</td><td><font color='black'>&#8594;</font></td></tr>
+        </table></td></tr></table>
+        >];
+}node_bb33155a [label="11: create_library_definitions()" name="definition_extraction::create_library_definitions" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_a2cbfc6b [label="56: dump_definition_to_text_file()" name="definition_extraction::dump_definition_to_text_file" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_76e99d34 [label="29: extract_definitions()" name="definition_extraction::extract_definitions" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_399f441d [label="14: filter_embeddings()" name="embedding_adaptation::filter_embeddings" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_f82ebb5b [label="52: load_translations()" name="embedding_adaptation::load_translations" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_78fdcf98 [label="80: embedding_vocabulary()" name="preprocess_embeddings::embedding_vocabulary" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_d6215d41 [label="20: find_vocabulary()" name="preprocess_embeddings::find_vocabulary" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_1e35a841 [label="135: load_words()" name="preprocess_embeddings::load_words" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_b89d7ab5 [label="109: n_missing()" name="preprocess_embeddings::n_missing" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_51977fe0 [label="98: prepare_all_embeddings()" name="preprocess_embeddings::prepare_all_embeddings" shape="rect" style="rounded,filled" fillcolor="#966F33" ];
+node_64d2a1f2 [label="53: prepare_embeddings_in_txt()" name="preprocess_embeddings::prepare_embeddings_in_txt" shape="rect" style="rounded,filled" fillcolor="#cccccc" ];
+node_8aa4deaf [label="44: save_to_vocabulary_file()" name="preprocess_embeddings::save_to_vocabulary_file" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_aa269fdf [label="157: score()" name="preprocess_embeddings::score" shape="rect" style="rounded,filled" fillcolor="#6db33f" ];
+node_bb33155a -> node_76e99d34 [color="#56B4E9" penwidth="2"];
+node_76e99d34 -> node_a2cbfc6b [color="#F0E442" penwidth="2"];
+node_399f441d -> node_f82ebb5b [color="#0072B2" penwidth="2"];
+node_d6215d41 -> node_8aa4deaf [color="#E69F00" penwidth="2"];
+node_d6215d41 -> node_8aa4deaf [color="#E69F00" penwidth="2"];
+node_b89d7ab5 -> node_1e35a841 [color="#0072B2" penwidth="2"];
+node_b89d7ab5 -> node_1e35a841 [color="#0072B2" penwidth="2"];
+node_b89d7ab5 -> node_aa269fdf [color="#0072B2" penwidth="2"];
+node_51977fe0 -> node_64d2a1f2 [color="#000000" penwidth="2"];
+node_64d2a1f2 -> node_78fdcf98 [color="#56B4E9" penwidth="2"];
+subgraph cluster_aa590897 {
+    node_bb33155a node_76e99d34 node_a2cbfc6b;
+    label="File: definition_extraction";
+    name="definition_extraction";
+    style="filled";
+    graph[style=dotted];
+};
+subgraph cluster_9009f779 {
+    node_399f441d node_f82ebb5b;
+    label="File: embedding_adaptation";
+    name="embedding_adaptation";
+    style="filled";
+    graph[style=dotted];
+};
+subgraph cluster_51be7559 {
+    node_d6215d41 node_8aa4deaf node_64d2a1f2 node_78fdcf98 node_51977fe0 node_b89d7ab5 node_1e35a841 node_aa269fdf;
+    label="File: preprocess_embeddings";
+    name="preprocess_embeddings";
+    style="filled";
+    graph[style=dotted];
+};
+}
