@@ -128,9 +128,9 @@ def manhattan():
     pass
 
 
-if __name__ == "__main__":
-    test_find_with_bisection()
-    test_jaccard()
+# if __name__ == "__main__":
+#     test_find_with_bisection()
+#     test_jaccard()
 
 
 class Jaccard:

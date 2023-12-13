@@ -803,13 +803,13 @@ class KnowledgeGraph:
                         )
 
 
-if __name__ == "__main__":
-    lib_name = helpers.Locations.NAME_AGDA_TEST
-    kg = KnowledgeGraph.load(helpers.Locations.knowledge_graph(lib_name))
-    LOGGER.info("Loaded")
-    kg.dump_pure(helpers.Locations.knowledge_graph_pure(lib_name))
-    # LOGGER.info("Dumped")
-    # g = KnowledgeGraph.load_pure(helpers.Locations.knowledge_graph_pure(lib_name))
-    # print(len(g.edges), len(g.nodes))
-    kg.graph_text_dump(helpers.Locations.graph_text_dump(lib_name))
-    # kg.dump_to_database()
+# if __name__ == "__main__":
+#     lib_name = helpers.Locations.NAME_AGDA_TEST
+#     kg = KnowledgeGraph.load(helpers.Locations.knowledge_graph(lib_name))
+#     LOGGER.info("Loaded")
+#     kg.dump_pure(helpers.Locations.knowledge_graph_pure(lib_name))
+#     # LOGGER.info("Dumped")
+#     # g = KnowledgeGraph.load_pure(helpers.Locations.knowledge_graph_pure(lib_name))
+#     # print(len(g.edges), len(g.nodes))
+#     kg.graph_text_dump(helpers.Locations.graph_text_dump(lib_name))
+#     # kg.dump_to_database()

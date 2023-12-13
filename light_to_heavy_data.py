@@ -114,6 +114,6 @@ def convert_to_heavy_data(library_path: str, optimized: bool):
 
 
 
-if __name__ == "__main__":
-    lib_loc = r"D:\sexp_dumps\submission\test_agda"  # change this
-    convert_to_heavy_data(lib_loc, optimized=True)
+# if __name__ == "__main__":
+#     lib_loc = r"D:\sexp_dumps\submission\test_agda"  # change this
+#     convert_to_heavy_data(lib_loc, optimized=True)

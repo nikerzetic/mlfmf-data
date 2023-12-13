@@ -2,7 +2,7 @@ import networkx as nx
 import numpy as np
 import numba
 
-from apaa.other.helpers import helpers.Other
+import apaa.helpers as helpers
 
 LOGGER = helpers.create_logger(__file__)
 
@@ -97,12 +97,12 @@ def test_bisection():
     print("alles gut")
 
 
-if __name__ == "__main__":
-    test_bisection()
-    g0 = nx.Graph()
-    g0.add_edge(0, 1, w=1)
-    g0.add_edge(1, 2, w=2)
-    g0.add_edge(0, 2, w=3)
-    m = efficient_transiction_matrix(g0)
-    for w in get_walks(m, 2, 6, np.random.default_rng(1234)):
-        print(w)
+# if __name__ == "__main__":
+#     test_bisection()
+#     g0 = nx.Graph()
+#     g0.add_edge(0, 1, w=1)
+#     g0.add_edge(1, 2, w=2)
+#     g0.add_edge(0, 2, w=3)
+#     m = efficient_transiction_matrix(g0)
+#     for w in get_walks(m, 2, 6, np.random.default_rng(1234)):
+#         print(w)

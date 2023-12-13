@@ -211,5 +211,5 @@ def do_efficient_all(libs: list[str]):
         agda.Definition.create_from_files(sexp_dir, helpers.Locations.dag_dir(lib))
 
 
-if __name__ == "__main__":
-    do_all_agda_test()
+# if __name__ == "__main__":
+#     do_all_agda_test()

@@ -819,9 +819,9 @@ def test_agda_tree():
         LOGGER.info(f"{tree.depth}, {tree.n_nodes}, {len(list(tree.nodes))}")
 
 
-if __name__ == "__main__":
-    print(
-        helpers.NodeType.NAME.is_name(),
-        helpers.NodeType.MODULE_NAME.is_name(),
-        helpers.NodeType.MODULE.is_name(),
-    )
+# if __name__ == "__main__":
+#     print(
+#         helpers.NodeType.NAME.is_name(),
+#         helpers.NodeType.MODULE_NAME.is_name(),
+#         helpers.NodeType.MODULE.is_name(),
+#     )
