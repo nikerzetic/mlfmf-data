@@ -1,20 +1,19 @@
-from typing import Literal, Protocol, Dict, Tuple, List, Any
 from enum import Enum
-import numpy as np
+from typing import Any, Dict, List, Literal, Protocol, Tuple
+
 import networkx as nx
-
-from apaa.learning.recommendation.base import BaseRecommender
-
-import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
-
+import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
+import apaa.data.structures.agda as agda
+import apaa.helpers.original as helpers
+import apaa.helpers.types as mytypes
+from apaa.learning.recommendation.base import BaseRecommender
 
-Node = helpers.MyTypes.NODE
-array1d = helpers.MyTypes.ARRAY_1D
-array2d = helpers.MyTypes.ARRAY_2D
+Node = mytypes.NODE
+array1d = mytypes.ARRAY_1D
+array2d = mytypes.ARRAY_2D
 
 LOGGER = helpers.create_logger(__file__)
 
@@ -60,7 +59,7 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
     def embed_nodes(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
+        definitions: Dict[mytypes.NODE, agda.Definition],
     ) -> Tuple[List[Node], array2d]:
         raise NotImplementedError()
 
@@ -91,7 +90,7 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
+        definitions: Dict[mytypes.NODE, agda.Definition],
         **embed_kwargs: Any,
     ):
         nodes, embeddings = self.embed_nodes(graph, definitions, **embed_kwargs)
@@ -136,26 +135,26 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
         graph: nx.MultiDiGraph,
         edge_file: str | None,
     ) -> Tuple[
-        List[Tuple[helpers.MyTypes.NODE, helpers.MyTypes.NODE, helpers.EdgeType]],
-        List[Tuple[helpers.MyTypes.NODE, helpers.MyTypes.NODE, helpers.EdgeType]],
+        List[Tuple[mytypes.NODE, mytypes.NODE, mytypes.Edge]],
+        List[Tuple[mytypes.NODE, mytypes.NODE, mytypes.Edge]],
     ]:
         """
         Consider definition functions only. Then, just randomly sample.
         Might be more intelligent to sample the close ones.
         Will do that later.
         """
-        definitions: List[helpers.MyTypes.NODE] = []
-        theorem_like_label = helpers.NodeType.get_theorem_like_tag(graph)
+        definitions: List[mytypes.NODE] = []
+        theorem_like_label = mytypes.Node.get_theorem_like_tag(graph)
         for node, label in graph.nodes(data="label"):  # type: ignore
             if label == theorem_like_label:
                 definitions.append(node)  # type: ignore
-        positive_edges: List[Tuple[str, str, helpers.EdgeType]] = []
+        positive_edges: List[Tuple[str, str, mytypes.Edge]] = []
         n_edges_per_node: Dict[Node, int] = {node: 0 for node in definitions}
         for u, v, e_type in graph.edges(nbunch=definitions, keys=True):  # type: ignore
-            if e_type == helpers.EdgeType.REFERENCE_IN_BODY:
+            if e_type == mytypes.Edge.REFERENCE_IN_BODY:
                 positive_edges.append((u, v, e_type))  # type: ignore
                 n_edges_per_node[u] += 1  # type: ignore
-        negative_edges: List[Tuple[str, str, helpers.EdgeType]] = []
+        negative_edges: List[Tuple[str, str, mytypes.Edge]] = []
         # randomly sample
         for node, count in n_edges_per_node.items():
             negative_edges.extend(
@@ -171,7 +170,11 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
                 if node in false_positives:
                     negative_edges.extend(
                         map(
-                            lambda fp, origin=node: (origin, fp, helpers.EdgeType.REFERENCE_IN_BODY),
+                            lambda fp, origin=node: (
+                                origin,
+                                fp,
+                                mytypes.Edge.REFERENCE_IN_BODY,
+                            ),
                             false_positives[node][:count],
                         )
                     )
@@ -221,7 +224,9 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
         candidates = [
             node
             for node in self.node_to_index
-            if not self.graph.has_edge(example.name, node, helpers.EdgeType.REFERENCE_IN_BODY)
+            if not self.graph.has_edge(
+                example.name, node, mytypes.Edge.REFERENCE_IN_BODY
+            )
         ]
         return self.predict_edges(example.name, candidates)
 

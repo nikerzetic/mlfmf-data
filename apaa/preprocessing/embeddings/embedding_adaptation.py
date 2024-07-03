@@ -1,8 +1,8 @@
 import os
+
 import numpy as np
 
-import apaa.helpers as helpers
-
+import apaa.helpers.original as helpers
 
 LOGGER = helpers.create_logger(__file__)
 
@@ -11,15 +11,21 @@ ADDITIONAL_TRANSLATIONS = {
     "ω": "infinity"  # to be consistent with setω -> set + infinity
 }
 
+
 def filter_embeddings(
-        embedding_file: str,
-        library: str, library_word_mappings_file: str,
-        filtered_embeddings_file: str
+    embedding_file: str,
+    library: str,
+    library_word_mappings_file: str,
+    filtered_embeddings_file: str,
 ):
-    words_library = helpers.Embeddings.load_words(helpers.Locations.vocabulary_file(library, True), separator="\t")
+    words_library = helpers.Embeddings.load_words(
+        helpers.Locations.vocabulary_file(library, True), separator="\t"
+    )
     LOGGER.info(f"Loaded {len(words_library)} words from library")
     additional_words_library = load_translations(library_word_mappings_file)
-    words_library += [w for words, _ in additional_words_library.values() for w in words]
+    words_library += [
+        w for words, _ in additional_words_library.values() for w in words
+    ]
     words_library = sorted(set(words_library))
     LOGGER.info(f"Extended to {len(words_library)} words from library")
     words_all, matrix_all = helpers.Embeddings.load_embedding(embedding_file)
@@ -36,7 +42,7 @@ def filter_embeddings(
         print(f"{len(chosen_indices)} {matrix_all.shape[1]}", file=f)
         for i in chosen_indices:
             word = words_all[i]
-            vector = ' '.join(map(str, matrix_all[i]))
+            vector = " ".join(map(str, matrix_all[i]))
             print(f"{word} {vector}", file=f)
         # new words (defined in terms of previous words)
         for new_word, (existing_words, weights) in additional_words_library.items():
@@ -44,8 +50,10 @@ def filter_embeddings(
             for existing_word, weight in zip(existing_words, weights):
                 if existing_word not in words_all_indices:
                     raise ValueError(f"{existing_word} not found (defines {new_word})")
-                new_vector = new_vector + weight * matrix_all[words_all_indices[existing_word]]
-            str_vector = ' '.join(map(str, new_vector))
+                new_vector = (
+                    new_vector + weight * matrix_all[words_all_indices[existing_word]]
+                )
+            str_vector = " ".join(map(str, new_vector))
             print(f"{new_word} {str_vector}", file=f)
 
 
@@ -94,6 +102,7 @@ def load_translations(file: str):
         assert " " not in word, word
         assert all(" " not in w for w in replacement_words), (word, replacement_words)
     return dictionary
+
 
 # if __name__ == "__main__":
 #     do_filtering = True

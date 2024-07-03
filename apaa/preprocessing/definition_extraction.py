@@ -1,9 +1,9 @@
 import os
+
 import tqdm
 
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
-
+import apaa.helpers.original as helpers
 
 LOGGER = helpers.create_logger(__name__)
 
@@ -21,10 +21,11 @@ def create_library_definitions(library: str) -> None:
         return
     elif not os.path.exists(library_file):
         raise ValueError(f"Create the library file '{library_file}' first.")
-    
+
     extract_definitions(
         agda.Forest.load(library_file), definitions_pickle_file, definitions_text_dir
     )
+
 
 def extract_definitions(
     forest: agda.Forest, out_file_pickle: str, out_dir_text: str
@@ -40,7 +41,7 @@ def extract_definitions(
         for i, tree in tqdm.tqdm(enumerate(forest)):
             is_internal = forest.is_tree_internal(i)
             for node in tree.nodes:
-                if node.node_type == helpers.NodeType.ENTRY:
+                if node.node_type == mytypes.Node.ENTRY:
                     definition_trees.append(
                         agda.Definition(tree.info, node, is_internal)
                     )
@@ -53,9 +54,9 @@ def extract_definitions(
     )
     return definition_forest
 
+
 def dump_definition_to_text_file(
-    out_dir_text: str, 
-    definition_forest: agda.DefinitionForest
+    out_dir_text: str, definition_forest: agda.DefinitionForest
 ):
     os.makedirs(out_dir_text, exist_ok=True)
     for def_tree in tqdm.tqdm(definition_forest):
@@ -70,6 +71,7 @@ def dump_definition_to_text_file(
             print(def_tree, file=f)
             print("", file=f)
 
+
 # UNUSED
 def check_for_nested_definitions(definition_trees: agda.DefinitionForest):
     """
@@ -81,7 +83,7 @@ def check_for_nested_definitions(definition_trees: agda.DefinitionForest):
         n_defs = 0
         current_root = def_tree.root
         while current_root is not None:
-            if current_root.node_type == helpers.NodeType.ENTRY:
+            if current_root.node_type == mytypes.Node.ENTRY:
                 n_defs += 1
             current_root = current_root.parent
         if n_defs > 1:

@@ -1,20 +1,17 @@
 import pickle
-from typing import Union, List, Tuple, Optional, Dict, Literal, Any
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 
-import numpy as np
 import networkx as nx
+import numpy as np
 
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
-
-
-Node = helpers.MyTypes.NODE
+import apaa.helpers.types as mytypes
 
 
 class BaseRecommender:
     def __init__(self, name: str, k: Literal["all"] | int) -> None:
         self.name = name
-        self.definitions: Optional[Dict[Node, agda.Definition]] = None
+        self.definitions: Optional[Dict[mytypes.Node, agda.Definition]] = None
         self.graph: Optional[nx.MultiDiGraph] = None
         self._k = self._check_k(k)
 
@@ -41,21 +38,21 @@ class BaseRecommender:
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[Node, agda.Definition],
+        definitions: Dict[mytypes.Node, agda.Definition],
         **kwargs: Any
     ) -> None:
         raise NotImplementedError()
 
     def predict(
         self, example_s: agda.Definition | List[agda.Definition]
-    ) -> List[Tuple[float, Node]] | List[List[Tuple[float, Node]]]:
+    ) -> List[Tuple[float, mytypes.Node]] | List[List[Tuple[float, mytypes.Node]]]:
         if isinstance(example_s, agda.Definition):
             unpack = True
             e_list = [example_s]
         else:
             unpack = False
             e_list = example_s
-        neighbours: List[List[Tuple[float, Node]]] = []
+        neighbours: List[List[Tuple[float, mytypes.Node]]] = []
         for element in e_list:
             neighbours.append(self.predict_one(element))
         if unpack:
@@ -63,7 +60,7 @@ class BaseRecommender:
         else:
             return neighbours
 
-    def predict_one(self, example: agda.Definition) -> List[Tuple[float, Node]]:
+    def predict_one(self, example: agda.Definition) -> List[Tuple[float, mytypes.Node]]:
         """
         Returns a sorted list of pairs (distance, other id).
         """
@@ -73,7 +70,7 @@ class BaseRecommender:
         self,
         example: agda.Definition,
         other: agda.Definition,
-        nearest_neighbours: Optional[List[Tuple[float, Node]]] = None,
+        nearest_neighbours: Optional[List[Tuple[float, mytypes.Node]]] = None,
     ) -> float:
         """
         Returns either a score ("probability") or
@@ -112,12 +109,14 @@ class BaseRecommender:
 
     def postprocess_predictions(
         self,
-        predictions: list[tuple[float, Node]],
+        predictions: list[tuple[float, mytypes.Node]],
         needs_normalisation: bool,
         is_similarity: bool,
-    ) -> list[tuple[float, Node]]:
+    ) -> list[tuple[float, mytypes.Node]]:
         predictions = [
-            pair for pair in predictions if agda.Definition.is_normal_definition(pair[1])
+            pair
+            for pair in predictions
+            if agda.Definition.is_normal_definition(pair[1])
         ]
         if needs_normalisation or not is_similarity:
             ys = np.array([y for y, _ in predictions])
@@ -153,25 +152,27 @@ class KNNRecommender(BaseRecommender):
     def __init__(self, k: Literal["all"] | int = 5):
         super().__init__("nearest neighbours", k)
         # a list of ids
-        self.examples: Optional[List[Node]] = None
-        self.example_to_i: Dict[Node, int] = {}
+        self.examples: Optional[List[mytypes.Node]] = None
+        self.example_to_i: Dict[mytypes.Node, int] = {}
         self.distance_matrix: Optional[
             np.ndarray[Tuple[int, int], np.dtype[np.float_]]
         ] = None
 
-    def initialize_examples_and_distance_matrix(
-        self, examples: list[Node]
-    ):
+    def initialize_examples_and_distance_matrix(self, examples: list[mytypes.Node]):
         self.examples = sorted(examples)
         try:
             self.distance_matrix = np.zeros((len(self.examples), len(self.examples)))
         except:
-            print("Error: could not allocate memory for the distance matrix. Skipping this.")
+            print(
+                "Error: could not allocate memory for the distance matrix. Skipping this."
+            )
         self.example_to_i = {e: i for i, e in enumerate(self.examples)}
 
     def find_neighbours_for_existing(
         self, i: Union[int, List[int]]
-    ) -> Union[List[Tuple[float, Node]], List[List[Tuple[float, Node]]]]:
+    ) -> Union[
+        List[Tuple[float, mytypes.Node]], List[List[Tuple[float, mytypes.Node]]]
+    ]:
         if self.distance_matrix is None:
             raise ValueError("Use .fit(examples) first to initialize the matrix.")
         if isinstance(i, int):
@@ -193,8 +194,8 @@ class KNNRecommender(BaseRecommender):
             return neighbours
 
     def distances_to_tuples(
-        self, distances: helpers.MyTypes.ARRAY_1D, for_existing: bool = False
-    ) -> List[Tuple[float, helpers.MyTypes.NODE]]:
+        self, distances: mytypes.ARRAY_1D, for_existing: bool = False
+    ) -> List[Tuple[float, mytypes.NODE]]:
         assert self.examples is not None
         nearest = np.argsort(distances)
         n_predictions = self.n_predictions(len(nearest))
@@ -203,7 +204,7 @@ class KNNRecommender(BaseRecommender):
         nearest = nearest[:upper]
         return [(distances[j], self.examples[j]) for j in nearest]
 
-    def predict_one(self, example: agda.Definition) -> List[Tuple[float, Node]]:
+    def predict_one(self, example: agda.Definition) -> List[Tuple[float, mytypes.Node]]:
         raise NotImplementedError()
 
     @staticmethod

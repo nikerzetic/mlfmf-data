@@ -1,17 +1,14 @@
-from apaa.data.manipulation import (
-    prepare_dataset,
-    prepare_internal_cv_dataset,
-    get_theorems_and_other,
-)
+import os
 import pickle
+
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
+import apaa.helpers.original as helpers
+import apaa.helpers.types as mytypes
+from apaa.data.manipulation import (get_theorems_and_other, prepare_dataset,
+                                    prepare_internal_cv_dataset)
 from apaa.data.structures import KnowledgeGraph
 from apaa.preprocessing import create_library_definitions
 from main_learner import LOGGER
-
-
-import os
 
 
 def load_and_dump_trees(library: str, library_dir: str):
@@ -29,15 +26,21 @@ def load_and_dump_trees(library: str, library_dir: str):
 
 
 def load_and_dump_tree_unimath():
-    return load_and_dump_trees(helpers.Locations.NAME_UNIMATH, helpers.Locations.SEXP_DIR_UNIMATH)
+    return load_and_dump_trees(
+        helpers.Locations.NAME_UNIMATH, helpers.Locations.SEXP_DIR_UNIMATH
+    )
 
 
 def load_and_dump_tree_agda_test():
-    return load_and_dump_trees(helpers.Locations.NAME_AGDA_TEST, helpers.Locations.SEXP_DIR_AGDA_TEST)
+    return load_and_dump_trees(
+        helpers.Locations.NAME_AGDA_TEST, helpers.Locations.SEXP_DIR_AGDA_TEST
+    )
 
 
 def load_and_dump_tree_stdlib():
-    return load_and_dump_trees(helpers.Locations.NAME_STDLIB, helpers.Locations.SEXP_DIR_STDLIB)
+    return load_and_dump_trees(
+        helpers.Locations.NAME_STDLIB, helpers.Locations.SEXP_DIR_STDLIB
+    )
 
 
 def do_all_for_library(library: str, library_dir: str, stage: int):
@@ -60,19 +63,27 @@ def do_all_for_library(library: str, library_dir: str, stage: int):
 
 
 def do_all_agda_test(stage: int = 0):
-    do_all_for_library(helpers.Locations.NAME_AGDA_TEST, helpers.Locations.SEXP_DIR_AGDA_TEST, stage)
+    do_all_for_library(
+        helpers.Locations.NAME_AGDA_TEST, helpers.Locations.SEXP_DIR_AGDA_TEST, stage
+    )
 
 
 def do_all_lean_test(stage: int = 0):
-    do_all_for_library(helpers.Locations.NAME_LEAN_TEST, helpers.Locations.SEXP_DIR_LEAN_TEST, stage)
+    do_all_for_library(
+        helpers.Locations.NAME_LEAN_TEST, helpers.Locations.SEXP_DIR_LEAN_TEST, stage
+    )
 
 
 def do_all_stdlib(stage: int = 0):
-    do_all_for_library(helpers.Locations.NAME_STDLIB, helpers.Locations.SEXP_DIR_STDLIB, stage)
+    do_all_for_library(
+        helpers.Locations.NAME_STDLIB, helpers.Locations.SEXP_DIR_STDLIB, stage
+    )
 
 
 def do_all_unimath(stage: int = 0):
-    do_all_for_library(helpers.Locations.NAME_UNIMATH, helpers.Locations.SEXP_DIR_UNIMATH, stage)
+    do_all_for_library(
+        helpers.Locations.NAME_UNIMATH, helpers.Locations.SEXP_DIR_UNIMATH, stage
+    )
 
 
 def create_datasets(libraries: list[str], p_test: float, ps_body_to_keep: list[float]):
@@ -147,7 +158,7 @@ def create_internal_cv_dataset(
         with open(dataset_file, "rb") as f:
             train_graph, (train_defs, external_test_defs), _ = pickle.load(f)
 
-        theorem_like_tag = helpers.NodeType.get_theorem_like_tag(train_graph)
+        theorem_like_tag = mytypes.Node.get_theorem_like_tag(train_graph)
         ids_in_order = sorted(train_defs)
         definitions_ids, _ = get_theorems_and_other(
             ids_in_order, train_defs, theorem_like_tag
@@ -191,7 +202,8 @@ def do_all_and_datasets():
 
 def do_efficient_for_lean_test():
     agda.Definition.create_from_files(
-        helpers.Locations.SEXP_DIR_LEAN_TEST, helpers.Locations.dag_dir(helpers.Locations.NAME_LEAN_TEST)
+        helpers.Locations.SEXP_DIR_LEAN_TEST,
+        helpers.Locations.dag_dir(helpers.Locations.NAME_LEAN_TEST),
     )
 
 
@@ -201,7 +213,10 @@ def do_efficient_all(libs: list[str]):
         (helpers.Locations.SEXP_DIR_LEAN_TEST, helpers.Locations.NAME_LEAN_TEST),
         (helpers.Locations.SEXP_DIR_STDLIB, helpers.Locations.NAME_STDLIB),
         (helpers.Locations.SEXP_DIR_UNIMATH, helpers.Locations.NAME_UNIMATH),
-        (helpers.Locations.SEXP_DIR_TYPE_TOPOLOGY, helpers.Locations.NAME_TYPE_TOPOLOGY),
+        (
+            helpers.Locations.SEXP_DIR_TYPE_TOPOLOGY,
+            helpers.Locations.NAME_TYPE_TOPOLOGY,
+        ),
         (helpers.Locations.SEXP_DIR_MATHLIB, helpers.Locations.NAME_MATHLIB),
     ]
     for sexp_dir, lib in pairs:

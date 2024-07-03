@@ -1,19 +1,20 @@
-from typing import Dict, Literal, Optional, List, Any, Set, Tuple
+from typing import Any, Dict, List, Literal, Optional, Set, Tuple
 
 import networkx as nx
 import numpy as np
 from scipy.spatial import distance as ssd
 
-from apaa.learning.node_embedding.word import DeepWordEmbedder, WordFrequencyWeight
-from apaa.learning.recommendation.embedding.base import KNNNodeEmbeddingRecommender
-
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
+import apaa.helpers.original as helpers
+import apaa.helpers.types as mytypes
+from apaa.learning.node_embedding.word import (DeepWordEmbedder,
+                                               WordFrequencyWeight)
+from apaa.learning.recommendation.embedding.base import \
+    KNNNodeEmbeddingRecommender
 
-
-array1d = helpers.MyTypes.ARRAY_1D
-array2d = helpers.MyTypes.ARRAY_2D
-Node = helpers.MyTypes.NODE
+array1d = mytypes.ARRAY_1D
+array2d = mytypes.ARRAY_2D
+Node = mytypes.NODE
 
 LOGGER = helpers.create_logger(__file__)
 
@@ -29,7 +30,7 @@ class WordEmbeddingRecommender(KNNNodeEmbeddingRecommender):
         k: Literal["all"] | int = 5,
         metric: str = "cosine",
         words: Optional[List[str]] = None,
-        word_embeddings: Optional[helpers.MyTypes.ARRAY_2D] = None,
+        word_embeddings: Optional[mytypes.ARRAY_2D] = None,
         word_frequency_weight: WordFrequencyWeight = WordFrequencyWeight.COUNT,
         **metric_kwargs: Any,
     ):
@@ -80,7 +81,7 @@ class EmbeddingAnalogiesRecommender(WordEmbeddingRecommender):
         self.train_kg: Optional[nx.MultiDiGraph] = None
         self.kg: Optional[nx.MultiDiGraph] = None
         self.direct_candidates: Optional[
-            Dict[helpers.MyTypes.NODE, List[Tuple[Node, Node]]]
+            Dict[mytypes.NODE, List[Tuple[Node, Node]]]
         ] = None
         self.node_to_module: Optional[Dict[Node, Node]] = None
         self.dim: Optional[int] = None
@@ -143,7 +144,7 @@ class EmbeddingAnalogiesRecommender(WordEmbeddingRecommender):
 
     def _compute_node_to_module(
         self, training_nodes: Set[Node]
-    ) -> tuple[dict[Node, tuple[helpers.EdgeType, Node]], dict[Node, list[Node]]]:
+    ) -> tuple[dict[Node, tuple[mytypes.Edge, Node]], dict[Node, list[Node]]]:
         """
         Computes a module that contains given node
         (which is either a definition or a (sub)module).
@@ -154,16 +155,19 @@ class EmbeddingAnalogiesRecommender(WordEmbeddingRecommender):
                   in the training graph.
             m2n= {module: [def, ...], ...} where defs are directly defined in module
         """
-        n2m: dict[Node, tuple[helpers.EdgeType, Node]] = {}
+        n2m: dict[Node, tuple[mytypes.Edge, Node]] = {}
         reversed_g = nx.reverse(self.graph)
         for source, sink, e_type in reversed_g.edges(keys=True):
-            if e_type == helpers.EdgeType.DEFINES or e_type == helpers.EdgeType.CONTAINS:
+            if (
+                e_type == mytypes.Edge.DEFINES
+                or e_type == mytypes.Edge.CONTAINS
+            ):
                 n2m[source] = (e_type, sink)
         m2n: dict[Node, list[Node]] = {}  # module: definitions directly in this module
         for node, (e_type, module) in n2m.items():
             if module not in m2n:
                 m2n[module] = []
-            if e_type == helpers.EdgeType.DEFINES and node in training_nodes:
+            if e_type == mytypes.Edge.DEFINES and node in training_nodes:
                 m2n[module].append(node)
         return n2m, m2n
 
@@ -184,6 +188,6 @@ class EmbeddingAnalogiesRecommender(WordEmbeddingRecommender):
                 for ref, edges_to_ref in self.graph[direct_def].items():
                     if (
                         ref in training_nodes
-                        and helpers.EdgeType.REFERENCE_IN_BODY in edges_to_ref
+                        and mytypes.Edge.REFERENCE_IN_BODY in edges_to_ref
                     ):
                         self.direct_candidates[module].append((direct_def, ref))

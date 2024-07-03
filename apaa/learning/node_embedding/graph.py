@@ -1,21 +1,21 @@
-from typing import List, Dict, Tuple, Any
 import multiprocessing
+import os
+from typing import Any, Dict, List, Tuple
 
-import numpy as np
 import networkx as nx
+import numpy as np
+from gensim.models import Word2Vec
 from node2vec import Node2Vec
 from sklearn.feature_extraction.text import TfidfVectorizer
-import os
-from gensim.models import Word2Vec
-from apaa.learning.node_embedding.base import NodeEmbeddingBase, Node, array2d
-from apaa.learning.node_embedding.walk_generation import Walker
 
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
-
+import apaa.helpers.original as helpers
+import apaa.helpers.types as mytypes
+from apaa.learning.node_embedding.base import Node, NodeEmbeddingBase, array2d
+from apaa.learning.node_embedding.walk_generation import Walker
 
 LOGGER = helpers.create_logger(__file__)
-array1d = helpers.MyTypes.ARRAY_1D
+array1d = mytypes.ARRAY_1D
 
 
 class NodeToVecEmbedding(NodeEmbeddingBase):
@@ -46,7 +46,7 @@ class NodeToVecEmbedding(NodeEmbeddingBase):
             "sg": 1,
             "workers": self.workers,
         }
-    
+
     @staticmethod
     def _get_workers(workers: int):
         if workers <= 0:

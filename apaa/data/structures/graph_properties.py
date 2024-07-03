@@ -1,12 +1,13 @@
-import networkx as nx
 import pickle
-from typing import Optional, Dict, List, Set, Any
+from typing import Any, Dict, List, Optional, Set
 
-import apaa.helpers as helpers
+import networkx as nx
 
+import apaa.helpers.original as helpers
+import apaa.helpers.types as mytypes
 
 LOGGER = helpers.create_logger(__file__)
-Node = helpers.MyTypes.NODE
+Node = mytypes.NODE
 
 
 class GraphProperties:
@@ -17,9 +18,9 @@ class GraphProperties:
     ):
         self.graph = graph
         self.weight = weight if weight is not None else "bla"
-        self._node_statistics: Dict[
-            str, Dict[Node, float]
-        ] = {}  # {measure: {node: value, ...}, ...}
+        self._node_statistics: Dict[str, Dict[Node, float]] = (
+            {}
+        )  # {measure: {node: value, ...}, ...}
         self._graph_statistics: Dict[str, float] = {}  # {measure: value, ...}
         self._weakly_connected_components: List[List[str]] = []
         self._strongly_connected_components: List[Set[Any]] = []
@@ -99,14 +100,14 @@ class GraphProperties:
         self._node_statistics[GraphProperties.IN_DEGREE] = in_degrees
         self._node_statistics["out_degree"] = out_degrees
         self._node_statistics["degree"] = degrees
-        self._graph_statistics[
-            "star_shape_level"
-        ] = GraphProperties._compute_stare_shape_level(
-            list(degrees.values()), highest_degree
+        self._graph_statistics["star_shape_level"] = (
+            GraphProperties._compute_stare_shape_level(
+                list(degrees.values()), highest_degree
+            )
         )
-        self._graph_statistics[
-            "tendency_to_make_hub"
-        ] = GraphProperties._compute_tendency_to_make_hub(list(degrees.values()))
+        self._graph_statistics["tendency_to_make_hub"] = (
+            GraphProperties._compute_tendency_to_make_hub(list(degrees.values()))
+        )
         LOGGER.info("Computed degree-related centrality measures.")
 
     @staticmethod

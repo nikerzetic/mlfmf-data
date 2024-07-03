@@ -1,22 +1,23 @@
-import random
-import tqdm
 import heapq
-from typing import Tuple, List, Dict, Any
+import random
+from typing import Any, Dict, List, Tuple
+
 import networkx as nx
+import tqdm
 
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
-
+import apaa.helpers.original as helpers
+import apaa.helpers.types as mytypes
 
 LOGGER = helpers.create_logger(__file__)
 LOGGER_DETAILS = helpers.create_logger("details", file="prune_stats.log")
-Node = helpers.MyTypes.NODE
+Node = mytypes.NODE
 
 
 def get_theorems_and_other(
     definition_ids_in_order: list[Node],
     id_to_definition: dict[Node, agda.Definition],
-    theorem_like_tag: helpers.NodeType,
+    theorem_like_tag: mytypes.Node,
 ) -> tuple[list[Node], list[Node]]:
     function_indices: list[Node] = []
     other_indices: list[Node] = []
@@ -38,7 +39,7 @@ def check_validity_of_train_test_entries(
     function_ids: list[Node],
     train_entries: list[Node] | None,
     test_entries: list[Node] | None,
-    theorem_like_tag: helpers.NodeType,
+    theorem_like_tag: mytypes.Node,
 ) -> tuple[bool, str]:
     if (train_entries is None) != (test_entries is None):
         raise ValueError("Either both or none of test/train defs must be given.")
@@ -67,8 +68,8 @@ def prepare_dataset(
     nx.MultiDiGraph,
     Tuple[Dict[Node, agda.Definition], Dict[Node, agda.Definition]],
     Tuple[
-        List[Tuple[Node, Node, helpers.EdgeType]],
-        List[Tuple[Node, Node, helpers.EdgeType]],
+        List[Tuple[Node, Node, mytypes.Edge]],
+        List[Tuple[Node, Node, mytypes.Edge]],
     ],
 ]:
     """
@@ -77,7 +78,7 @@ def prepare_dataset(
     3. Return (modified graph, (train defs, test defs), (positive edges, negative edges))
     """
     random.seed(seed)
-    theorem_like_tag = helpers.NodeType.get_theorem_like_tag(graph)
+    theorem_like_tag = mytypes.Node.get_theorem_like_tag(graph)
     LOGGER.info(f"Theorem-like tag: {theorem_like_tag}")
     definitions_ids = sorted(id_to_definition)
     random.shuffle(definitions_ids)
@@ -137,7 +138,7 @@ def prepare_dataset(
 
 def prune_definition(
     current_graph: nx.MultiDiGraph, definition: agda.Definition, p_keep: float
-) -> Tuple[bool, agda.Definition, List[Tuple[Node, Node, helpers.EdgeType]]]:
+) -> Tuple[bool, agda.Definition, List[Tuple[Node, Node, mytypes.Edge]]]:
     """
     1) treba je odstraniti povezave, ki predstavljajo približno 1 - p_keep teže
     2) One so posejane malo levo desno po drevesu, zato jih lahko enostavno naključno izberemo
@@ -147,9 +148,9 @@ def prune_definition(
        Poleg tega moramo povezavo odstraniti še v grafu.
        Izbris vozlišča = vozlišče.parent <---> vozlišče.otroci
     """
-    n_children, referenced_nodes = get_n_children_and_references(definition)
-    random.shuffle(n_children)  # so that the choice of leaves later is random
-    heapq.heapify(n_children)
+    out_degrees, referenced_nodes = get_out_degrees_and_references(definition)
+    random.shuffle(out_degrees)  # so that the choice of leaves later is random
+    heapq.heapify(out_degrees)
     removed_edges = remove_references(
         current_graph, referenced_nodes, p_keep, definition
     )
@@ -157,37 +158,53 @@ def prune_definition(
     did_anything = bool(removed_edges)
     if not did_anything:
         return did_anything, definition, removed_edges
-    prune_leaves(n_children, p_keep, definition.name)
+    prune_leaves(out_degrees, p_keep, definition.name)
     return did_anything, definition, removed_edges
 
 
-def get_n_children_and_references(definition: agda.Definition):
-    n_children = []  # (n children present, node)
+def get_out_degrees_and_references(definition: agda.Definition):
+    """
+    Returns the number of children of each node in definition, and a dictionary of referenced nodes.
+
+    Reference nodes are node of type name. Their description is the reference to an outside definition.
+
+    ## Parameters
+
+    - definition
+
+    ## Returns
+
+    - number_of_children
+    - referenced_nodes: dictionary {"reference name": [nodes in definition where node.name == "reference name"]}
+    """
+    number_of_children = []  # (number of children present, node)
     referenced_nodes: Dict[Any, List[agda.Node]] = {}  # reference name: [list of nodes]
     body_node_iterator = definition.body_nodes
     next(body_node_iterator)  # skip root of the body
     for node in body_node_iterator:
-        n_children.append((len(node.children), node))
+        number_of_children.append((len(node.children), node))
         if node.node_type.is_name():
             reference = node.name
-            if reference not in referenced_nodes:
-                referenced_nodes[reference] = []
-            referenced_nodes[reference].append(node)
-    return n_children, referenced_nodes
+            # TODO: bolj elegantno
+            referenced_nodes.get(reference, []).append(node)
+            # if reference not in referenced_nodes:
+            #     referenced_nodes[reference] = []
+            # referenced_nodes[reference].append(node)
+    return number_of_children, referenced_nodes
 
 
 def get_edge_type(reference_name: str):
     if agda.Definition.is_with_definition(reference_name):
-        return helpers.EdgeType.REFERENCE_IN_BODY_TO_WITH
+        return mytypes.Edge.REFERENCE_IN_BODY_TO_WITH
     elif agda.Definition.is_rewrite_definition(reference_name):
-        return helpers.EdgeType.REFERENCE_IN_BODY_TO_REWRITE
+        return mytypes.Edge.REFERENCE_IN_BODY_TO_REWRITE
     else:
-        return helpers.EdgeType.REFERENCE_IN_BODY
+        return mytypes.Edge.REFERENCE_IN_BODY
 
 
 def remove_references(
-    current_graph, referenced_nodes, p_keep, definition
-) -> list[tuple[Node, Node, helpers.EdgeType]]:
+    current_graph: nx.MultiDiGraph, referenced_nodes, p_keep, definition
+) -> list[tuple[Node, Node, mytypes.Edge]]:
     referenced_nodes_heap = list(
         (-len(nodes), reference) for reference, nodes in referenced_nodes.items()
     )
@@ -255,7 +272,9 @@ def prune_leaves(n_children, p_keep, definition_name):
             parent, agda.Node
         )  # even the root of the body is not the root of the definition
         new_children = [child for child in parent.children if child is not node]
-        parent.children = new_children
+        parent.children = (
+            new_children  # TODO: removing children should be a class method
+        )
         heapq.heappush(n_children, (len(parent.children), parent))
         node.parent = None
         n_to_prune -= 1
@@ -273,8 +292,8 @@ def prepare_internal_cv_dataset(
     nx.MultiDiGraph,
     Tuple[Dict[Node, agda.Definition], Dict[Node, agda.Definition]],
     Tuple[
-        List[Tuple[Node, Node, helpers.EdgeType]],
-        List[Tuple[Node, Node, helpers.EdgeType]],
+        List[Tuple[Node, Node, mytypes.Edge]],
+        List[Tuple[Node, Node, mytypes.Edge]],
     ],
 ]:
     # split the definitions into n_folds parts

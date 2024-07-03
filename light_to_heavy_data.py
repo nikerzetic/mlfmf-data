@@ -1,18 +1,18 @@
-from light_weight_data_loader import load_library, EntryNode, Entry
-import apaa.helpers as helpers
-import apaa.data.structures.agda as agda
-from apaa.data.structures import KnowledgeGraph
-from apaa.data.manipulation import prepare_dataset
-
 import os
 import pickle
 
-import tqdm
 import networkx as nx
+import tqdm
+
+import apaa.data.structures.agda as agda
+import apaa.helpers.types as mytypes
+from apaa.data.manipulation import prepare_dataset
+from apaa.data.structures import KnowledgeGraph
+from light_weight_data_loader import Entry, EntryNode, load_library
 
 
 def create_heavy_entry(entry_node: EntryNode) -> agda.Node:
-    node_type = helpers.NodeType(entry_node.type)
+    node_type = mytypes.Node(entry_node.type)
     description = entry_node.description
     return agda.Node(node_type, description, None, [])
 
@@ -38,9 +38,9 @@ def convert_entry(entry: Entry, module_name: str, is_internal: bool) -> agda.Def
     # create tree that looks like
     #        module node
     #   module name     entry tree
-    module_node = agda.Node(helpers.NodeType.MODULE, "", None, [])
+    module_node = agda.Node(mytypes.Node.MODULE, "", None, [])
     entry_root = converted[entry.root.id]
-    module_name_node = agda.Node(helpers.NodeType.MODULE_NAME, module_name, None, [])
+    module_name_node = agda.Node(mytypes.Node.MODULE_NAME, module_name, None, [])
     agda.Node.connect_parent_to_children(module_node, [module_name_node, entry_root])
     tree = agda.Definition(entry.name, entry_root, is_internal)
     return tree
@@ -54,7 +54,9 @@ def convert_entries(
     trees = []
     for entry in tqdm.tqdm(entries):
         module_name = entry_to_module[entry.name]
-        trees.append(convert_entry(entry, module_name, entry_to_is_internal[entry.name]))
+        trees.append(
+            convert_entry(entry, module_name, entry_to_is_internal[entry.name])
+        )
     forest = agda.DefinitionForest(trees)
     return forest
 
@@ -113,7 +115,6 @@ def convert_to_heavy_data(library_path: str, optimized: bool):
         pickle.dump(dataset, f)
 
 
-
-# if __name__ == "__main__":
-#     lib_loc = r"D:\sexp_dumps\submission\test_agda"  # change this
-#     convert_to_heavy_data(lib_loc, optimized=True)
+if __name__ == "__main__":
+    lib_loc = "/home/nik/Projects/mlfmf/stdlib/" # change this
+    convert_to_heavy_data(lib_loc, optimized=True)

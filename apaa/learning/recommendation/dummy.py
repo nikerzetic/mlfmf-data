@@ -1,27 +1,27 @@
-from typing import Literal, Union, List, Dict, Any
+from typing import Any, Dict, List, Literal, Union
 
-import numpy as np
 import networkx as nx
+import numpy as np
 
-from apaa.learning.recommendation.base import BaseRecommender
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
+import apaa.helpers.original as helpers
+import apaa.helpers.types as mytypes
+from apaa.learning.recommendation.base import BaseRecommender
 
-
-Node = helpers.MyTypes.NODE
+Node = mytypes.NODE
 
 
 class DummyRecommender(BaseRecommender):
     def __init__(self, k: Literal["all"] | int = 5, random_seed: int = 12345):
         super().__init__("default model", k)
         self.prediction: Node | None = None
-        self.other_train_examples: List[helpers.MyTypes.NODE] = []
+        self.other_train_examples: List[mytypes.NODE] = []
         self.seed = random_seed
 
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
+        definitions: Dict[mytypes.NODE, agda.Definition],
         **kwargs: Any
     ):
         # find the node with the largest in-degree
@@ -60,9 +60,13 @@ class DummyRecommender(BaseRecommender):
         answer = [(0.75, self.prediction)]
         n_other_predictions = self.n_predictions(1 + len(self.other_train_examples)) - 1
         for i in range(n_other_predictions):
-            answer.append((0.25 + np.random.rand() * 0.25, self.other_train_examples[i]))
+            answer.append(
+                (0.25 + np.random.rand() * 0.25, self.other_train_examples[i])
+            )
         return self.postprocess_predictions(answer, False, True)
 
     @staticmethod
     def load(file: str) -> "DummyRecommender":
-        return helpers.Other.class_checker(BaseRecommender.unpickle(file), DummyRecommender)
+        return helpers.Other.class_checker(
+            BaseRecommender.unpickle(file), DummyRecommender
+        )

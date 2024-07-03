@@ -1,18 +1,18 @@
-from collections import Counter
-import tqdm
-import os
-import traceback
-from gensim.models.keyedvectors import KeyedVectors
-import numpy as np
-import re
-from typing import Set
-import matplotlib.pyplot as plt
-import random
 import bisect
+import os
+import random
+import re
+import traceback
+from collections import Counter
+from typing import Set
+
+import matplotlib.pyplot as plt
+import numpy as np
+import tqdm
+from gensim.models.keyedvectors import KeyedVectors
 
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
-
+import apaa.helpers.original as helpers
 
 LOGGER = helpers.create_logger(__file__)
 
@@ -24,7 +24,9 @@ def find_vocabulary(library: str):
     if os.path.exists(out_file_all) and os.path.exists(out_file_names):
         LOGGER.info(f"Already done: find vocabulary for {library}")
         return
-    lib_entries: agda.DefinitionForest = agda.DefinitionForest.load(helpers.Locations.definitions_pickled(library))
+    lib_entries: agda.DefinitionForest = agda.DefinitionForest.load(
+        helpers.Locations.definitions_pickled(library)
+    )
     counts_names = Counter()
     counts_all = Counter()
     forbidden = {""}
@@ -35,7 +37,9 @@ def find_vocabulary(library: str):
         # counts_all.update(Fact("irrelevant", tree=entry).words)
         forbidden.add(forbidden1)
         forbidden.add(forbidden2)
-    LOGGER.info(f"Library {library} contains {len(counts_names)} words in definition names.")
+    LOGGER.info(
+        f"Library {library} contains {len(counts_names)} words in definition names."
+    )
     LOGGER.info(f"Library {library} contains {len(counts_all)} words in total.")
     save_to_vocabulary_file(counts_names, out_file_names, forbidden)
     save_to_vocabulary_file(counts_all, out_file_all, forbidden)
@@ -97,10 +101,14 @@ def embedding_vocabulary(text_file: str, word_file: str):
 
 def prepare_all_embeddings():
     vec_location = os.path.join(helpers.Locations.EMBEDDINGS_DIR, "pretrained")
-    bin_files = [os.path.join(vec_location, f) for f in os.listdir(vec_location) if f.endswith(".bin")]
+    bin_files = [
+        os.path.join(vec_location, f)
+        for f in os.listdir(vec_location)
+        if f.endswith(".bin")
+    ]
     for file in bin_files:
         LOGGER.info(f"Processing '{file}'")
-        bare_name = file[:file.rfind(".")]
+        bare_name = file[: file.rfind(".")]
         word_file = bare_name + "_words.txt"
         text_file = bare_name + ".txt"
         prepare_embeddings_in_txt(file, word_file, text_file)
@@ -108,34 +116,45 @@ def prepare_all_embeddings():
 
 def n_missing():
     LOGGER.info("Computing missing words")
-    libs = [helpers.Locations.NAME_STDLIB, helpers.Locations.NAME_UNIMATH, helpers.Locations.NAME_AGDA_TEST]
+    libs = [
+        helpers.Locations.NAME_STDLIB,
+        helpers.Locations.NAME_UNIMATH,
+        helpers.Locations.NAME_AGDA_TEST,
+    ]
     vec_location = os.path.join(helpers.Locations.EMBEDDINGS_DIR, "pretrained")
-    vec_word_files = [os.path.join(vec_location, f) for f in os.listdir(vec_location) if "_words.txt" in f]
+    vec_word_files = [
+        os.path.join(vec_location, f)
+        for f in os.listdir(vec_location)
+        if "_words.txt" in f
+    ]
     scores = []
 
     for vec_word_file in vec_word_files:
         vec_words = load_words(vec_word_file)
         vec_word_file_name = os.path.basename(vec_word_file)
-        vec_word_file_name = vec_word_file_name[:vec_word_file_name.rfind(".")]
+        vec_word_file_name = vec_word_file_name[: vec_word_file_name.rfind(".")]
         for lib in libs:
             lib_words = load_words(helpers.Locations.vocabulary_file(lib, True))
             missing_words = score(lib_words, vec_words)
             penalty = (len(missing_words), sum(missing_words.values()))
             scores.append((lib, penalty, os.path.basename(vec_word_file)))
-            report_file = os.path.join(helpers.Locations.EMBEDDINGS_DIR, f"missing_for_{lib}_in_{vec_word_file_name}.txt")
+            report_file = os.path.join(
+                helpers.Locations.EMBEDDINGS_DIR,
+                f"missing_for_{lib}_in_{vec_word_file_name}.txt",
+            )
             with open(report_file, "w", encoding="utf-8") as f:
                 for word, count in sorted(missing_words.items(), key=lambda t: -t[1]):
                     print(f"{word}\t{count}", file=f)
     scores.sort()
-    
+
     for s in scores:
         LOGGER.info(s)
 
 
 def load_words(
-        file: str, 
-        is_library: bool,
-        ):
+    file: str,
+    is_library: bool,
+):
     words = {}
     with open(file, encoding="utf-8") as f:
         if is_library:
@@ -175,8 +194,8 @@ def embedding_distribution(file: str):
     mean_components = np.mean(matrix, axis=0)
     std_components = np.std(matrix, axis=0)
     for what, name in zip(
-            [max_components, min_components, mean_components, std_components],
-            ["max", "min", "mean", "std"]
+        [max_components, min_components, mean_components, std_components],
+        ["max", "min", "mean", "std"],
     ):
         plt.hist(what, bins=20)
         plt.title(f"{name} of components")
@@ -228,7 +247,9 @@ def embedding_quality(file: str):
             groups[canonic] = [i]
         else:
             groups[canonic].append(i)
-    chosen = [(word, variations) for word, variations in groups.items() if len(variations) > 1]
+    chosen = [
+        (word, variations) for word, variations in groups.items() if len(variations) > 1
+    ]
     chosen.sort(key=lambda pair: -len(pair[1]))
     chosen_distances = []
     n_top = min(100, len(chosen))
@@ -250,7 +271,12 @@ def embedding_quality(file: str):
     for i in range(n_top):
         word, variations = chosen[i]
         distances = chosen_distances[i]
-        quantiles = sorted([(compute_quantile(other_distances, d), words[w]) for d, w in zip(distances, variations)])
+        quantiles = sorted(
+            [
+                (compute_quantile(other_distances, d), words[w])
+                for d, w in zip(distances, variations)
+            ]
+        )
         LOGGER.info(f"Quantiles for {word}: {quantiles}")
 
     # some analogies:
@@ -267,7 +293,7 @@ def embedding_quality(file: str):
     pair_groups = [
         [("man", "woman"), ("king", "queen"), ("waiter", "waitress")],
         [("Paris", "France"), ("London", "England"), ("Tokio", "Japan")],
-        [("Paris", "paris"), ("Home", "home"), ("Boy", "boy")]
+        [("Paris", "paris"), ("Home", "home"), ("Boy", "boy")],
     ]
     # man - woman + king = queen?
     for group in pair_groups:
@@ -284,7 +310,9 @@ def embedding_quality(file: str):
             distances_only.sort()
             d_actual = distance(target, actual)
             quantile = compute_quantile(distances_only, d_actual)
-            LOGGER.info(f"    {x0} - {y0} + {y1} = {nns} [quantile/dist: {quantile}, {d_actual:.2e}]")
+            LOGGER.info(
+                f"    {x0} - {y0} + {y1} = {nns} [quantile/dist: {quantile}, {d_actual:.2e}]"
+            )
 
     # some synonyms
     pairs = [
@@ -295,7 +323,7 @@ def embedding_quality(file: str):
         (["ω"], ["λ"]),
         (["l"], ["ell"]),
         (["co", "prime"], ["coprime"]),
-        (["un", "pleasant"], ["unpleasant"])
+        (["un", "pleasant"], ["unpleasant"]),
     ]
     for xs0, xs1 in pairs:
         v0 = np.zeros(n_dim)

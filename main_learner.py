@@ -3,19 +3,18 @@ import itertools
 import os
 import pickle
 import time
-from typing import Any, Dict, List, SupportsFloat, Tuple, Type, Optional
+from typing import Any, Dict, List, Optional, SupportsFloat, Tuple, Type
 
 import networkx as nx
 import tqdm
 
-from apaa.data.structures import KnowledgeGraph
 import apaa.data.structures.agda as agda
-import apaa.learning.recommendation as recommendation
+import apaa.helpers.original as helpers
+import apaa.helpers.types as mytypes
 import apaa.learning.evaluation as evaluation
+import apaa.learning.recommendation as recommendation
+from apaa.data.structures import KnowledgeGraph
 from apaa.learning.node_embedding import WordFrequencyWeight
-
-import apaa.helpers as helpers
-
 
 Config = tuple[str, dict[str, Any]]
 Configs = list[Config]
@@ -23,13 +22,13 @@ Configs = list[Config]
 
 LOGGER = helpers.create_logger(__file__)
 
-Node = helpers.MyTypes.NODE
+Node = mytypes.NODE
 Dataset = tuple[
     nx.MultiDiGraph,
     tuple[dict[Node, agda.Definition], dict[Node, agda.Definition]],
     tuple[
-        List[Tuple[Node, Node, helpers.EdgeType]],
-        List[Tuple[Node, Node, helpers.EdgeType]],
+        List[Tuple[Node, Node, mytypes.Edge]],
+        List[Tuple[Node, Node, mytypes.Edge]],
     ],
 ]
 
@@ -51,8 +50,12 @@ def learn_and_predict(
         library, model_class, file_appendix
     )
     model_dump_file = helpers.Locations.model_file(library, model_class, file_appendix)
-    results_file = helpers.Locations.predictions_file(library, model_class, file_appendix)
-    meta_file = helpers.Locations.experiment_meta_file(library, model_class, file_appendix)
+    results_file = helpers.Locations.predictions_file(
+        library, model_class, file_appendix
+    )
+    meta_file = helpers.Locations.experiment_meta_file(
+        library, model_class, file_appendix
+    )
     kg_pure_file = os.path.join(library_path, "graph.pkl")
     if force:
         LOGGER.info("Forcing to run ... Deleting previous results ...")
@@ -146,7 +149,9 @@ def learn(
     id_to_def: Dict[Node, agda.Definition],
     fit_args: Dict[str, Any],
     meta_file: str,
-) -> tuple[bool, Optional[recommendation.BaseRecommender], Optional[float], Optional[bool]]:
+) -> tuple[
+    bool, Optional[recommendation.BaseRecommender], Optional[float], Optional[bool]
+]:
     will_learn = not os.path.exists(model_dump_file)
     if will_learn:
         LOGGER.info("Learning models")
@@ -175,8 +180,8 @@ def predict_and_evaluate(
     train_graph: nx.MultiDiGraph,
     defs_for_training: dict[Node, agda.Definition],
     test_definitions: dict[Node, agda.Definition],
-    positive_edges: List[Tuple[Node, Node, helpers.EdgeType]],
-    negative_edges: List[Tuple[Node, Node, helpers.EdgeType]],
+    positive_edges: List[Tuple[Node, Node, mytypes.Edge]],
+    negative_edges: List[Tuple[Node, Node, mytypes.Edge]],
     actual_k: int,
     model: recommendation.BaseRecommender,
     compute_recommender_style: bool,
@@ -206,7 +211,7 @@ def predict_and_evaluate(
         )
     if compute_link_prediction_style:
         evaluate_classification_style(
-            defs_for_training,   # ok: pruned test definitons and no positive edges
+            defs_for_training,  # ok: pruned test definitons and no positive edges
             positive_edges,
             negative_edges,
             model,
@@ -242,8 +247,8 @@ def evaluate_recommender_style(
 
 def evaluate_classification_style(
     defs_for_training: dict[Node, agda.Definition],
-    positive_edges: List[Tuple[Node, Node, helpers.EdgeType]],
-    negative_edges: List[Tuple[Node, Node, helpers.EdgeType]],
+    positive_edges: List[Tuple[Node, Node, mytypes.Edge]],
+    negative_edges: List[Tuple[Node, Node, mytypes.Edge]],
     model: recommendation.BaseRecommender,
     measures_classification: evaluation.QualityMeasureClassification,
     results_classification: dict[
@@ -338,19 +343,34 @@ def learn_recommender_models(
         LOGGER.info("Dummy models ...")
         dummy_configs = create_no_arg_configs()
         learn_one_group(
-            recommendation.DummyRecommender, library_path, dataset, p_def_to_keep, dummy_configs, force
+            recommendation.DummyRecommender,
+            library_path,
+            dataset,
+            p_def_to_keep,
+            dummy_configs,
+            force,
         )
     if bow:
         LOGGER.info("BOW models ...")
         bow_configs = create_bow_configs()
         learn_one_group(
-            recommendation.BagOfWordsRecommender, library_path, dataset, p_def_to_keep, bow_configs, force
+            recommendation.BagOfWordsRecommender,
+            library_path,
+            dataset,
+            p_def_to_keep,
+            bow_configs,
+            force,
         )
     if tfidf:
         LOGGER.info("TFIDF models ...")
         tfidf_configs = create_tfidf_configs()
         learn_one_group(
-            recommendation.TFIDFRecommender, library_path, dataset, p_def_to_keep, tfidf_configs, force
+            recommendation.TFIDFRecommender,
+            library_path,
+            dataset,
+            p_def_to_keep,
+            tfidf_configs,
+            force,
         )
     if word_embedding:
         LOGGER.info("Word embedding models ...")
@@ -394,7 +414,10 @@ def create_no_arg_configs() -> Configs:
 
 def create_node_to_vec_configs() -> Configs:
     configs: Configs = []
-    edge_schemess = [recommendation.EdgeEmbeddingScheme.CONCATENATION, recommendation.EdgeEmbeddingScheme.MEAN]
+    edge_schemess = [
+        recommendation.EdgeEmbeddingScheme.CONCATENATION,
+        recommendation.EdgeEmbeddingScheme.MEAN,
+    ]
     ps = [1.0, 2.0]
     qs = [1.0, 2.0]
     vector_sizes = [32, 64]
@@ -448,7 +471,9 @@ def create_word_embedding_configs():
     options: Configs = []
     words, word_embeddings = helpers.Embeddings.load_embedding(
         os.path.join(
-            helpers.Locations.EMBEDDINGS_DIR, "pretrained", "stdlib_crawl-300d-2M-subword2.txt"
+            helpers.Locations.EMBEDDINGS_DIR,
+            "pretrained",
+            "stdlib_crawl-300d-2M-subword2.txt",
         )
     )
     for frequency_weight, metric in itertools.product(

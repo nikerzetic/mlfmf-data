@@ -5,16 +5,16 @@ import networkx as nx
 import numpy as np
 import tqdm
 
+import apaa.data.structures.agda as agda
+import apaa.helpers.types as mytypes
 from apaa.learning.node_embedding.word import BagOfWordsEmbedder, TFIDFEmbedder
 from apaa.learning.recommendation.base import KNNRecommender, Node
-from apaa.learning.recommendation.embedding.base import KNNNodeEmbeddingRecommender
+from apaa.learning.recommendation.embedding.base import \
+    KNNNodeEmbeddingRecommender
 from apaa.learning.recommendation.embedding.numba_distance import jaccard
 
-import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
-
-int_array = helpers.MyTypes.INT_ARRAY_1D
-array1d = helpers.MyTypes.ARRAY_1D
+int_array = mytypes.INT_ARRAY_1D
+array1d = mytypes.ARRAY_1D
 
 
 class BagOfWordsRecommender(KNNRecommender):
@@ -26,7 +26,7 @@ class BagOfWordsRecommender(KNNRecommender):
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
+        definitions: Dict[mytypes.NODE, agda.Definition],
         **kwargs: Any,
     ):
         self.initialize_examples_and_distance_matrix(list(graph.nodes))

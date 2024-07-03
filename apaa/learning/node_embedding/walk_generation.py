@@ -1,8 +1,8 @@
 import networkx as nx
-import numpy as np
 import numba
+import numpy as np
 
-import apaa.helpers as helpers
+import apaa.helpers.original as helpers
 
 LOGGER = helpers.create_logger(__file__)
 
@@ -38,7 +38,12 @@ def bisect_left(values: np.array, x: float):
 
 
 @numba.njit
-def get_walks(transition_matrix: list[tuple[list[int], list[float]]], n_walks: int, walk_length: int, rng: np.random.Generator):
+def get_walks(
+    transition_matrix: list[tuple[list[int], list[float]]],
+    n_walks: int,
+    walk_length: int,
+    rng: np.random.Generator,
+):
     """
     Returns a list of random walks of length walk_length.
     """
@@ -53,8 +58,7 @@ def get_walks(transition_matrix: list[tuple[list[int], list[float]]], n_walks: i
             random_steps = rng.random(walk_length - 1)
             for i_step in range(walk_length - 1):
                 i_neighbour = bisect_left(
-                    transition_matrix[walk[i_step]][1],
-                    random_steps[i_step]
+                    transition_matrix[walk[i_step]][1], random_steps[i_step]
                 )
                 walk[i_step + 1] = transition_matrix[walk[i_step]][0][i_neighbour]
             walks.append(walk)
@@ -66,14 +70,14 @@ class Walker:
         self.n_walks = n_walks
         self.walk_length = walk_length
         self.rng = np.random.default_rng(seed)
-    
+
     def get_walks(self, graph: nx.Graph):
         transition_matrix = efficient_transiction_matrix(graph)
         LOGGER.debug("Transition matrix computed.")
         walks = get_walks(transition_matrix, self.n_walks, self.walk_length, self.rng)
         walks = [Walker._postprocess_walk(walk) for walk in walks]
         return walks
-    
+
     @staticmethod
     def _postprocess_walk(walk):
         a = walk.tolist()
@@ -81,13 +85,14 @@ class Walker:
         while a[i] < -0.5:
             i -= 1
         if i < i0:
-            return a[:i + 1]
+            return a[: i + 1]
         else:
             return a
 
 
 def test_bisection():
     import bisect
+
     for n in range(2, 18):
         a = np.arange(n)
         for x in np.random.rand(100):

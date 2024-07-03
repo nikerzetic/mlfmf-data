@@ -107,7 +107,7 @@ def test_jaccard():
         ([0, 1, 2], [1, 2, 3], [0, 3, 4], [3, 4, 0], 0.0),
         ([0, 1, 2], [1, 2, 3], [2, 3, 4], [3, 4, 2], 1 - 7 / 11),
         ([1, 2], [1, 2], [2, 3], [3, 2], 1 - 4 / 6),
-        ([0, 1, 2], [], [1, 1, 1], [], 1.0)
+        ([0, 1, 2], [], [1, 1, 1], [], 1.0),
     ]
     for words1, words2, counts1, counts2, d_exptected in tqdm.tqdm(cases):
         actual = jaccard(
@@ -117,11 +117,14 @@ def test_jaccard():
             np.array(counts2, dtype=np.int64),
         )
         if abs(actual - d_exptected) > 10**-5:
-            raise ValueError(f"Does not work: {words1}, {counts1}, {words2}, {counts2}:"
-                             f"{d_exptected} != {actual}")
+            raise ValueError(
+                f"Does not work: {words1}, {counts1}, {words2}, {counts2}:"
+                f"{d_exptected} != {actual}"
+            )
 
 
 #################################################################
+
 
 def manhattan():
     # never used
@@ -145,13 +148,13 @@ class Jaccard:
         union_size = sum(union.values())
         intersection_size = 0
         for key in union:
-            intersection_size += min(fact1_words.get(key, 0.0), fact2_words.get(key, 0.0))
+            intersection_size += min(
+                fact1_words.get(key, 0.0), fact2_words.get(key, 0.0)
+            )
         return 1 - intersection_size / union_size
 
     @staticmethod
     def distance_numba(
-            words1: np.ndarray, counts1: np.ndarray,
-            words2: np.ndarray, counts2: np.ndarray
+        words1: np.ndarray, counts1: np.ndarray, words2: np.ndarray, counts2: np.ndarray
     ):
         return jaccard(words1, counts1, words2, counts2)
-

@@ -1,19 +1,16 @@
-from typing import Any, Dict, List, Tuple, Literal
+from typing import Any, Dict, List, Literal, Tuple
 
 import networkx as nx
 from sklearn.ensemble import RandomForestClassifier
 
-from apaa.learning.recommendation.embedding.edge.base import (
-    BaseEdgeEmbeddingRecommender,
-    EdgeEmbeddingScheme,
-)
-from apaa.learning.node_embedding.graph import NodeToVecEmbedding
-
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
+import apaa.helpers.types as mytypes
+from apaa.learning.node_embedding.graph import NodeToVecEmbedding
+from apaa.learning.recommendation.embedding.edge.base import (
+    BaseEdgeEmbeddingRecommender, EdgeEmbeddingScheme)
 
-Node = helpers.MyTypes.NODE
-array2d = helpers.MyTypes.ARRAY_2D
+Node = mytypes.NODE
+array2d = mytypes.ARRAY_2D
 
 
 class Node2VecEdgeEmbeddingRecommender(BaseEdgeEmbeddingRecommender):

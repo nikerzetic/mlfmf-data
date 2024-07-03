@@ -1,17 +1,18 @@
 from collections import Counter
-from typing import Any, Dict, List, Tuple, Optional
+from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+
 import networkx as nx
 import numpy as np
-from apaa.learning.node_embedding.base import Node, NodeEmbeddingBase
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from enum import Enum
 
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
+import apaa.helpers.types as mytypes
+from apaa.learning.node_embedding.base import Node, NodeEmbeddingBase
 
+array1d = mytypes.ARRAY_1D
+array2d = mytypes.ARRAY_2D
 
-array1d = helpers.MyTypes.ARRAY_1D
-array2d = helpers.MyTypes.ARRAY_2D
 
 class WordEmbedding(NodeEmbeddingBase):
     def __init__(self, name: str):
@@ -35,9 +36,11 @@ class WordEmbedding(NodeEmbeddingBase):
         definitions_as_words = []
         for node in nodes:
             if node in definitions:
-                doc = WordEmbedding.definition_to_document(graph, definitions, definitions[node])
+                doc = WordEmbedding.definition_to_document(
+                    graph, definitions, definitions[node]
+                )
             else:
-                doc  = "not a definition"
+                doc = "not a definition"
             definitions_as_words.append(doc)
         return vectorizer.fit_transform(definitions_as_words)  # type: ignore
 

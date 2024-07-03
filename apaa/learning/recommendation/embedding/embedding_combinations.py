@@ -1,16 +1,13 @@
-from typing import Literal, Any
+from typing import Any, Literal
+
+import apaa.helpers.types as mytypes
 from apaa.learning.node_embedding.base import EmbeddingConcatenator
-from apaa.learning.node_embedding.word import (
-    TFIDFEmbedder,
-    DeepWordEmbedder,
-    WordFrequencyWeight,
-)
-from apaa.learning.recommendation.embedding.base import KNNNodeEmbeddingRecommender
-import apaa.helpers as helpers
-import apaa.learning as learning
+from apaa.learning.node_embedding.word import (DeepWordEmbedder, TFIDFEmbedder,
+                                               WordFrequencyWeight)
+from apaa.learning.recommendation.embedding.base import \
+    KNNNodeEmbeddingRecommender
 
-
-array2d = helpers.MyTypes.ARRAY_2D
+array2d = mytypes.ARRAY_2D
 
 
 class TFIDFAndWord2VecEmbeddingRecommender(KNNNodeEmbeddingRecommender):
@@ -36,5 +33,5 @@ class TFIDFAndWord2VecEmbeddingRecommender(KNNNodeEmbeddingRecommender):
             ),
             k=k,
             metric=metric,
-            **metric_kwargs
+            **metric_kwargs,
         )

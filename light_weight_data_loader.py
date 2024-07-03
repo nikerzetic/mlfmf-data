@@ -1,8 +1,9 @@
+import os
+import pickle
+import zipfile
+
 import networkx as nx
 import tqdm
-import os
-import zipfile
-import pickle
 
 
 class EntryNode:
@@ -47,7 +48,7 @@ class Entry:
                 stack.append(child)
                 processed_nodes.add(c_id)
         return True
-    
+
     def check(self):
         stack = [self.root]
         n = 0
@@ -111,7 +112,7 @@ def load_entry_optimized(entry_file: str):
     stack = nodes[root.id][1][:]
     while stack:
         current_id = stack.pop()
-        node, children_ids = nodes[current_id] 
+        node, children_ids = nodes[current_id]
         for child_id in children_ids:
             if child_id in node_to_parent:
                 continue
@@ -142,7 +143,10 @@ def postprocess_entry(entry: Entry):
             continue
         processed.add(current.id)
         stack.extend(current.children)
-        if not (current in entry.root.children or current.type in [":name", ":type", ":entry"]):
+        if not (
+            current in entry.root.children
+            or current.type in [":name", ":type", ":entry"]
+        ):
             for parent in current.parents:
                 parent.children.remove(current)
             for child in current.children:
@@ -185,14 +189,16 @@ def load_graph(graph_file: str) -> nx.MultiDiGraph:
 
 
 def try_unzip(zip_file, entry_dir):
-    with zipfile.ZipFile(zip_file, 'r') as z:
+    with zipfile.ZipFile(zip_file, "r") as z:
         for file_info in tqdm.tqdm(z.infolist()):
-            if file_info.filename.endswith('.dag'):
+            if file_info.filename.endswith(".dag"):
                 file_info.filename = os.path.basename(file_info.filename)
                 z.extract(file_info, entry_dir)
 
 
-def load_library(library_name: str, optimized: bool = False) -> tuple[list[Entry], nx.MultiDiGraph]:
+def load_library(
+    library_name: str, optimized: bool = False
+) -> tuple[list[Entry], nx.MultiDiGraph]:
     entry_dir = f"{library_name}/entries"
     zip_file = f"{library_name}/entries.zip"
     network_file = f"{library_name}/network.csv"
@@ -202,7 +208,7 @@ def load_library(library_name: str, optimized: bool = False) -> tuple[list[Entry
             try_unzip(zip_file, entry_dir)
         else:
             print(f"Did not found {entry_dir} nor {zip_file}.")
-    bad = False	
+    bad = False
     if not os.path.exists(entry_dir):
         print(f"Did not found {entry_dir}.")
         bad = True

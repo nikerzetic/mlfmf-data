@@ -1,14 +1,15 @@
 from platform import node
 from tkinter import X
-from typing import Optional, List, Dict, Any, Tuple
-import numpy as np
+from typing import Any, Dict, List, Optional, Tuple
+
 import networkx as nx
+import numpy as np
+
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
+import apaa.helpers.types as mytypes
 
-
-Node = helpers.MyTypes.NODE
-array2d = helpers.MyTypes.ARRAY_2D
+Node = mytypes.NODE
+array2d = mytypes.ARRAY_2D
 
 
 class NodeEmbeddingBase:
@@ -78,7 +79,9 @@ class EmbeddingConcatenator(NodeEmbeddingBase):
                 raise ValueError(f"Different nodes:\n{sorted_e_nodes}\n{the_nodes}")
             node_order = self._get_node_order(e)
             if node_order != the_node_order:
-                raise ValueError(f"Different node order:\n{node_order}\n{the_node_order}")
+                raise ValueError(
+                    f"Different node order:\n{node_order}\n{the_node_order}"
+                )
             assert e.node_embeddings is not None
             embeddings.append(e.node_embeddings[node_order])
         nodes = self.embedders[0].nodes

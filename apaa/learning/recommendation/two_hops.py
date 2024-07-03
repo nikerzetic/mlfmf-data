@@ -4,11 +4,11 @@ from typing import Any, Dict, Literal, Optional
 
 import networkx as nx
 
-from apaa.learning.recommendation.base import BaseRecommender
 import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
+import apaa.helpers.types as mytypes
+from apaa.learning.recommendation.base import BaseRecommender
 
-Node = helpers.MyTypes.NODE
+Node = mytypes.NODE
 
 
 class NodeWeightScheme(Enum):

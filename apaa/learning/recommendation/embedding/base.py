@@ -1,21 +1,18 @@
+from typing import Any, Dict, List, Literal, Optional, Tuple
+
+import networkx as nx
+import numpy as np
+from scipy.spatial import distance as ssd
 from sklearn.neighbors import VALID_METRICS
+
+import apaa.data.structures.agda as agda
+import apaa.helpers.types as mytypes
 from apaa.learning.node_embedding.base import NodeEmbeddingBase
 from apaa.learning.recommendation.base import KNNRecommender
 
-import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
-
-
-import networkx as nx
-from scipy.spatial import distance as ssd
-import numpy as np
-
-
-from typing import Any, Dict, List, Literal, Optional, Tuple
-
-Node = helpers.MyTypes.NODE
-array1d = helpers.MyTypes.ARRAY_1D
-array2d = helpers.MyTypes.ARRAY_2D
+Node = mytypes.NODE
+array1d = mytypes.ARRAY_1D
+array2d = mytypes.ARRAY_2D
 
 
 class KNNNodeEmbeddingRecommender(KNNRecommender):
@@ -35,7 +32,7 @@ class KNNNodeEmbeddingRecommender(KNNRecommender):
     def fit(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
+        definitions: Dict[mytypes.NODE, agda.Definition],
         **embed_kwargs: Any,
     ):
         self.embed_documents(graph, definitions, **embed_kwargs)
@@ -49,7 +46,7 @@ class KNNNodeEmbeddingRecommender(KNNRecommender):
     def embed_documents(
         self,
         graph: nx.MultiDiGraph,
-        definitions: Dict[helpers.MyTypes.NODE, agda.Definition],
+        definitions: Dict[mytypes.NODE, agda.Definition],
         **embed_kwargs: Any,
     ):
         self.initialize_examples_and_distance_matrix(list(graph.nodes))

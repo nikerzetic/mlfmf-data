@@ -1,13 +1,13 @@
-from typing import Any, List, Optional, Dict, Set, Tuple, Iterator, Union
-import tqdm
+import os
 import pickle
 import re
-import os
+from typing import Any, Dict, Iterator, List, Optional, Set, Tuple, Union
+
 import networkx as nx
+import tqdm
 
-import agda
-import apaa.helpers as helpers
-
+import apaa.helpers.original as helpers
+import apaa.helpers.types as mytypes
 
 LOGGER = helpers.create_logger(__file__)
 
@@ -19,13 +19,13 @@ class Node:
 
     def __init__(
         self,
-        node_type: helpers.NodeType,
+        node_type: mytypes.Node,
         node_description: str,
         parent: Optional["Node"],
         children: List["Node"],
     ):
         self._id = Node._generate_next_id()
-        self._node_type: helpers.NodeType = node_type
+        self._node_type: mytypes.Node = node_type
         self._node_description: str = node_description
         self._parent: Optional[Node] = parent
         self._children: List[Node] = children
@@ -61,7 +61,7 @@ class Node:
         )
 
     @property
-    def node_type(self) -> helpers.NodeType:
+    def node_type(self) -> mytypes.Node:
         return self._node_type
 
     @property
@@ -128,16 +128,16 @@ class Node:
         return max_seen
 
     @property
-    def name(self) -> helpers.MyTypes.NODE:
+    def name(self) -> mytypes.NODE:
         """Does some checks regarding the format of the node description and returns it."""
-        if not helpers.NodeType.is_name(self.node_type):
+        if not mytypes.Node.is_name(self.node_type):
             raise ValueError(
                 f"Cannot get the name of node of type {self.node_type} (not a name!)"
             )
         if not (self.node_description[0] == self.node_description[-1] == '"'):
             raise ValueError(f"Expected quotation marks in {self.node_description}")
         if (
-            self.node_type == helpers.NodeType.MODULE_NAME
+            self.node_type == mytypes.Node.MODULE_NAME
             and self.node_description.count(" ") != 0
         ):
             raise ValueError(
@@ -189,7 +189,9 @@ class Node:
 
 
 class Tree:
-    def __init__(self, info: str, root: Node, show_stats: bool = False, post_process: bool = True):
+    def __init__(
+        self, info: str, root: Node, show_stats: bool = False, post_process: bool = True
+    ):
         self._info = info
         self._root = root
         self._depth = -1
@@ -203,15 +205,14 @@ class Tree:
         self._postprocess_nested_module_names()
         self._tree_to_dag()
         # self.compute_topological_sort()
-        
 
     def _tree_to_dag(self):
         """
         Takes care of (:node) and (:ref) nodes.
 
         """
-        entry_nodes = [n for n in self.root.nodes if n.node_type == helpers.NodeType.ENTRY]
-        for entry_root in entry_nodes:            
+        entry_nodes = [n for n in self.root.nodes if n.node_type == mytypes.Node.ENTRY]
+        for entry_root in entry_nodes:
             type_root = entry_root.children[1]
             if type_root.children:
                 self._tree_to_dag_helper(type_root)
@@ -222,22 +223,26 @@ class Tree:
     def _tree_to_dag_helper(self, root_node: Node):
         node_map: dict[str, Node] = {}
         current_node = root_node
-        while current_node.node_type == helpers.NodeType.NODE:
+        while current_node.node_type == mytypes.Node.NODE:
             node_map[current_node.node_description] = current_node.children[0]
             current_node = current_node.children[1]
-        ref_nodes = [n for n in root_node.nodes if n.node_type == helpers.NodeType.REF]
+        ref_nodes = [n for n in root_node.nodes if n.node_type == mytypes.Node.REF]
         for ref_node in ref_nodes:
             which_ref = node_map[ref_node.node_description]
             parent_node = ref_node.parent
             assert parent_node is not None
-            parent_node.children = [c if c is not ref_node else which_ref for c in parent_node.children]
+            parent_node.children = [
+                c if c is not ref_node else which_ref for c in parent_node.children
+            ]
             ref_node.parent = None
         # remove (:node) nodes: connect current to the parent of root_node (which is the first (:node) node)
         if not node_map:
             return
         parent = root_node.parent
         assert parent is not None
-        parent.children = [c if c is not root_node else current_node for c in parent.children]
+        parent.children = [
+            c if c is not root_node else current_node for c in parent.children
+        ]
         for node in node_map.values():
             node.parent = None
 
@@ -247,10 +252,10 @@ class Tree:
         (:module-name "foo.bar.Baz"). This function fixes this.
         """
         for node in self.nodes:
-            if node.node_type == helpers.NodeType.MODULE_NAME and not node.node_description:
+            if node.node_type == mytypes.Node.MODULE_NAME and not node.node_description:
                 assert (
                     len(node.children) == 1
-                    and node.children[0].node_type == helpers.NodeType.NAME
+                    and node.children[0].node_type == mytypes.Node.NAME
                     and node.children[0].node_description
                 )
                 node.node_description = node.children[0].node_description
@@ -291,7 +296,7 @@ class Tree:
 
     def create_subtree(self, node: Node):
         return Tree(self.info, node)
-    
+
     @staticmethod
     def is_this_a_quote(raw: str, i: int):
         n_backslash = 0
@@ -369,9 +374,14 @@ class Tree:
         entries = []
         # find module
         allowed = [
-            tag.value for tag in [helpers.NodeType.MODULE, helpers.NodeType.MODULE_NAME, helpers.NodeType.NAME]
+            tag.value
+            for tag in [
+                mytypes.Node.MODULE,
+                mytypes.Node.MODULE_NAME,
+                mytypes.Node.NAME,
+            ]
         ]
-        if helpers.NodeType.ENTRY.value not in raw:
+        if mytypes.Node.ENTRY.value not in raw:
             return (0, len(raw) - 1), []
         for i, c in enumerate(raw):
             if c == "(" and not any(
@@ -384,7 +394,7 @@ class Tree:
         # find entries
         i_start = -1
         count = -1
-        entry = helpers.NodeType.ENTRY.value
+        entry = mytypes.Node.ENTRY.value
         in_string = False
         global_count = 0
         for i, c in enumerate(raw):
@@ -444,15 +454,15 @@ class Tree:
         return Node(node_type, rest, None, [])
 
     @staticmethod
-    def extract_tags(node_body: str) -> Tuple[List[helpers.NodeType], str]:
-        node_tags: List[helpers.NodeType] = []
+    def extract_tags(node_body: str) -> Tuple[List[mytypes.Node], str]:
+        node_tags: List[mytypes.Node] = []
         found_any = True
         while node_body and found_any:
             first_part = node_body
             if " " in first_part:
                 first_part = first_part[: first_part.find(" ")]
             found_any = False
-            for tag in helpers.NodeType:
+            for tag in mytypes.Node:
                 if first_part == tag.value:
                     node_tags.append(tag)
                     node_body = node_body[len(tag.value) :].strip()
@@ -571,7 +581,7 @@ class Forest:
 
 
 class Definition(Tree):
-    def __init__(self, info: str, root: agda.Node, is_internal: bool):
+    def __init__(self, info: str, root: Node, is_internal: bool):
         super().__init__(info, root, post_process=False)
         self._module_name = self._find_module_name()
         self._is_internal = is_internal
@@ -603,9 +613,9 @@ class Definition(Tree):
             if os.path.exists(finished):
                 continue
             LOGGER.info(f"Processing {path}")
-            is_internal = agda.Forest._is_sexp_internal(source_root_dir, path)
-            for i, raw_sexp in tqdm.tqdm(enumerate(agda.Definition.create_from_file(path))):
-                
+            is_internal = Forest._is_sexp_internal(source_root_dir, path)
+            for i, raw_sexp in tqdm.tqdm(enumerate(Definition.create_from_file(path))):
+
                 out_path = os.path.join(
                     out_dir,
                     f"{out_file}_{i:04}.dag",
@@ -613,12 +623,12 @@ class Definition(Tree):
                 if os.path.exists(out_path):
                     LOGGER.info(f"Skipping {out_path} as it already exists.")
                     continue
-                tree = agda.Tree.parse_raw_sexp(path, raw_sexp)
+                tree = Tree.parse_raw_sexp(path, raw_sexp)
                 # find a single entry
                 the_entry_node = tree.root.children[1]
-                assert the_entry_node.node_type == helpers.NodeType.ENTRY
-                definition = agda.Definition(tree.info, the_entry_node, is_internal)
-                agda.Definition.dump_to_dag_file(definition, out_path)
+                assert the_entry_node.node_type == mytypes.Node.ENTRY
+                definition = Definition(tree.info, the_entry_node, is_internal)
+                Definition.dump_to_dag_file(definition, out_path)
             with open(finished, "w") as _:
                 pass
 
@@ -642,19 +652,19 @@ class Definition(Tree):
 
         :param file:
         :param immediate_dump:
-        :return: parsed agda.Tree
+        :return: parsed Tree
         """
         with open(file, encoding="utf-8") as f:
             raw = "".join([line.strip() for line in f])
 
-        module_part, entries = agda.Tree._find_entry_intervals(raw)
+        module_part, entries = Tree._find_entry_intervals(raw)
         module_part_str = raw[module_part[0] : module_part[1]]
         for i_start, i_end in entries:
             raw_sexp = f"{module_part_str} {raw[i_start:i_end]})"
             yield raw_sexp
 
     @staticmethod
-    def dump_to_dag_file(definition: "agda.Definition", out_file: str):
+    def dump_to_dag_file(definition: "Definition", out_file: str):
         """
         Dumps the definition to a file in the DAG format.
         """
@@ -666,7 +676,10 @@ class Definition(Tree):
                 current = stack.pop()
                 # process
                 chidren_ids = [child._id for child in current.children]
-                print(f"{current._id}\t{current.node_type.value}\t{current.node_description}\t{chidren_ids}", file=f)
+                print(
+                    f"{current._id}\t{current.node_type.value}\t{current.node_description}\t{chidren_ids}",
+                    file=f,
+                )
                 # stack children
                 for child in current.children:
                     if child._id not in processed_nodes:
@@ -686,11 +699,11 @@ class Definition(Tree):
         return self.root.children[2]
 
     @property
-    def type_nodes(self) -> Iterator[agda.Node]:
+    def type_nodes(self) -> Iterator[Node]:
         yield from self.type.nodes
 
     @property
-    def body_nodes(self) -> Iterator[agda.Node]:
+    def body_nodes(self) -> Iterator[Node]:
         yield from self.body.nodes
 
     @property
@@ -707,7 +720,7 @@ class Definition(Tree):
 
     def _find_module_name(self):
         node = self.root
-        while node is not None and node.node_type != helpers.NodeType.MODULE:
+        while node is not None and node.node_type != mytypes.Node.MODULE:
             node = node.parent
         if node is None:
             raise ValueError(f"Could not found module for {self.name}")
@@ -716,10 +729,10 @@ class Definition(Tree):
     def to_words(
         self,
         graph: nx.MultiDiGraph,
-        id_to_definition: Dict[helpers.MyTypes.NODE, "agda.Definition"],
+        id_to_definition: Dict[mytypes.NODE, "Definition"],
     ) -> List[str]:
-        relevant_nodes: List[helpers.MyTypes.NODE] = []
-        if not agda.Definition.is_with_definition(self.name):
+        relevant_nodes: List[mytypes.NODE] = []
+        if not Definition.is_with_definition(self.name):
             relevant_nodes.append(self.name)
             relevant_nodes.extend(self._get_helper_nodes(graph))
         parts: List[str] = []
@@ -730,32 +743,32 @@ class Definition(Tree):
         text = helpers.TextManipulation.normalize_tree_text(" ".join(parts))
         return helpers.TextManipulation.extract_words(text)
 
-    def _get_helper_nodes(self, graph: nx.MultiDiGraph) -> List[helpers.MyTypes.NODE]:
-        helper_nodes: List[helpers.MyTypes.NODE] = []
+    def _get_helper_nodes(self, graph: nx.MultiDiGraph) -> List[mytypes.NODE]:
+        helper_nodes: List[mytypes.NODE] = []
         to_do = [self.name]
-        processed: Set[helpers.MyTypes.NODE] = {self.name}
+        processed: Set[mytypes.NODE] = {self.name}
         while to_do:
             node = to_do.pop()
             for sink in graph[node]:
                 if sink in processed:
                     continue
-                elif agda.Definition.is_with_definition(
+                elif Definition.is_with_definition(
                     sink
-                ) or agda.Definition.is_rewrite_definition(sink):
+                ) or Definition.is_rewrite_definition(sink):
                     helper_nodes.append(sink)
                     to_do.append(sink)
                     processed.add(sink)
         return helper_nodes
 
     @staticmethod
-    def named_nodes(node_iterator: Iterator[agda.Node]) -> Iterator[agda.Node]:
+    def named_nodes(node_iterator: Iterator[Node]) -> Iterator[Node]:
         for node in node_iterator:
             if not node.node_type.is_name():
                 continue
             yield node
 
     @staticmethod
-    def is_with_definition(qualified_name: helpers.MyTypes.NODE):
+    def is_with_definition(qualified_name: mytypes.NODE):
         """
         Computes whether the qualified name refers to a with definition.
 
@@ -767,7 +780,7 @@ class Definition(Tree):
         return re.match("with-\\d+ \\d+$", unqualified) is not None
 
     @staticmethod
-    def is_rewrite_definition(qualified_name: Union[str, helpers.MyTypes.NODE]):
+    def is_rewrite_definition(qualified_name: Union[str, mytypes.NODE]):
         """
         Computes whether the qualified name refers to a rewrite definition.
 
@@ -779,41 +792,39 @@ class Definition(Tree):
         return re.match("-rewrite\\d+ \\d+$", unqualified) is not None
 
     @staticmethod
-    def is_normal_definition(qualified_name: str | helpers.MyTypes.NODE):
-        return not agda.Definition.is_with_definition(
+    def is_normal_definition(qualified_name: str | mytypes.NODE):
+        return not Definition.is_with_definition(
             qualified_name
-        ) and not agda.Definition.is_rewrite_definition(qualified_name)
+        ) and not Definition.is_rewrite_definition(qualified_name)
 
     @staticmethod
-    def dummy_definition(identifier: helpers.MyTypes.NODE) -> "agda.Definition":
-        dummy_module = agda.Node(helpers.NodeType.MODULE, "", None, [])
-        module_name = agda.Node(helpers.NodeType.MODULE_NAME, '"a.dummy.module"', None, [])
-        root_node = agda.Node(helpers.NodeType.EXTERNAL, "", None, [])
-        name_node = agda.Node(
-            helpers.NodeType.NAME, agda.Node.name_to_description(identifier), None, []
+    def dummy_definition(identifier: mytypes.NODE) -> "Definition":
+        dummy_module = Node(mytypes.Node.MODULE, "", None, [])
+        module_name = Node(mytypes.Node.MODULE_NAME, '"a.dummy.module"', None, [])
+        root_node = Node(mytypes.Node.EXTERNAL, "", None, [])
+        name_node = Node(
+            mytypes.Node.NAME, Node.name_to_description(identifier), None, []
         )
-        type_node = agda.Node(helpers.NodeType.EXTERNAL, "", None, [])
-        body_node = agda.Node(helpers.NodeType.EXTERNAL, "", None, [])
-        agda.Node.connect_parent_to_children(dummy_module, [module_name, root_node])
-        agda.Node.connect_parent_to_children(
-            root_node, [name_node, type_node, body_node]
-        )
-        return agda.Definition(helpers.Locations.NON_FILE, root_node, False)
+        type_node = Node(mytypes.Node.EXTERNAL, "", None, [])
+        body_node = Node(mytypes.Node.EXTERNAL, "", None, [])
+        Node.connect_parent_to_children(dummy_module, [module_name, root_node])
+        Node.connect_parent_to_children(root_node, [name_node, type_node, body_node])
+        return Definition(helpers.Locations.NON_FILE, root_node, False)
 
 
 class DefinitionForest(Forest):
-    def __init__(self, definitions: List[agda.Definition]):
+    def __init__(self, definitions: List[Definition]):
         is_internal = [definition.is_internal for definition in definitions]
         super().__init__(definitions, is_internal)
 
     @staticmethod
-    def load(file: str) -> "agda.DefinitionForest":
+    def load(file: str) -> "DefinitionForest":
         with open(file, "rb") as f:
             return pickle.load(f)
 
 
 def test_agda_tree():
-    files = ["test_data/small.agda-sexp", "test_data/Agda.Primitive.agda-sexp"]
+    files = ["test_data/small.agda-sexp", "test_data/Primitive.agda-sexp"]
     for file in files:
         tree = Tree.create_from_file(file)
         LOGGER.info(f"{tree.depth}, {tree.n_nodes}, {len(list(tree.nodes))}")
@@ -821,7 +832,7 @@ def test_agda_tree():
 
 # if __name__ == "__main__":
 #     print(
-#         helpers.NodeType.NAME.is_name(),
-#         helpers.NodeType.MODULE_NAME.is_name(),
-#         helpers.NodeType.MODULE.is_name(),
+#         mytypes.NodeType.NAME.is_name(),
+#         mytypes.NodeType.MODULE_NAME.is_name(),
+#         mytypes.NodeType.MODULE.is_name(),
 #     )

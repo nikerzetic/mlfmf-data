@@ -1,20 +1,17 @@
-from apaa.learning.node_embedding.word import TFIDFEmbedder, DeepWordEmbedder
-from apaa.learning.node_embedding.graph import NodeToVecEmbedding
-from apaa.learning.node_embedding.base import EmbeddingConcatenator
-from apaa.learning.recommendation.embedding.edge.base import (
-    BaseEdgeEmbeddingRecommender,
-    EdgeEmbeddingScheme,
-)
-import apaa.data.structures.agda as agda
-import apaa.helpers as helpers
+from typing import Any, Literal
 
 import networkx as nx
 
-from typing import Literal, Any
+import apaa.data.structures.agda as agda
+import apaa.helpers.types as mytypes
+from apaa.learning.node_embedding.base import EmbeddingConcatenator
+from apaa.learning.node_embedding.graph import NodeToVecEmbedding
+from apaa.learning.node_embedding.word import DeepWordEmbedder, TFIDFEmbedder
+from apaa.learning.recommendation.embedding.edge.base import (
+    BaseEdgeEmbeddingRecommender, EdgeEmbeddingScheme)
 
-
-Node = helpers.MyTypes.NODE
-array2d = helpers.MyTypes.ARRAY_2D
+Node = mytypes.NODE
+array2d = mytypes.ARRAY_2D
 
 
 class TFIDFAndNode2VecEmbeddingRecommender(BaseEdgeEmbeddingRecommender):

@@ -1,13 +1,8 @@
-from .base import NodeEmbeddingBase, EmbeddingConcatenator
+from .base import EmbeddingConcatenator, NodeEmbeddingBase
 from .graph import NodeToVecEmbedding
-from .word import (
-    BagOfWordsEmbedder,
-    DeepWordEmbedder,
-    TFIDFEmbedder,
-    WordFrequencyWeight,
-)
 from .walk_generation import Walker
-
+from .word import (BagOfWordsEmbedder, DeepWordEmbedder, TFIDFEmbedder,
+                   WordFrequencyWeight)
 
 __all__ = [
     "NodeEmbeddingBase",
@@ -17,5 +12,5 @@ __all__ = [
     "DeepWordEmbedder",
     "TFIDFEmbedder",
     "WordFrequencyWeight",
-    "Walker"
+    "Walker",
 ]
