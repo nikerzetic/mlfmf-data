@@ -100,7 +100,7 @@ def prepare_dataset(
     LOGGER.info(f"Dataset {p_test} {p_def_to_keep}")
     if n <= 1:
         raise ValueError("Cannot split less than 2 examples.")
-    n_test = max(1, min(n - 1, round(p_test * n)))
+    number_of_test_examples = max(1, min(n - 1, round(p_test * n)))
     train_test_defs = ({}, {})
     train_graph: nx.MultiDiGraph = graph.copy(False)
     positive_edges = []
@@ -110,17 +110,19 @@ def prepare_dataset(
     if test_defs is not None:
         # test defs at the beginning
         function_ids = test_defs + function_ids
+
     for def_id in tqdm.tqdm(function_ids):
         if any(def_id in part for part in train_test_defs):
             # test_defs are present twice
             continue
         definition = id_to_definition[def_id]
-        if len(train_test_defs[1]) == n_test:
+        if len(train_test_defs[1]) == number_of_test_examples:
             train_test_defs[0][def_id] = definition
             continue
         appropriate_for_test, pruned, removed_edges = prune_definition(
             train_graph, definition, p_def_to_keep
         )
+        # HACK: bool appropriate_for_test cast as int to accesss tuple id
         train_test_defs[appropriate_for_test][def_id] = pruned
         if appropriate_for_test:
             positive_edges.extend(removed_edges)

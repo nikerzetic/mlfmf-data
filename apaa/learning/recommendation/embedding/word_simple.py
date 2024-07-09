@@ -8,7 +8,7 @@ import tqdm
 import apaa.data.structures.agda as agda
 import apaa.helpers.types as mytypes
 from apaa.learning.node_embedding.word import BagOfWordsEmbedder, TFIDFEmbedder
-from apaa.learning.recommendation.base import KNNRecommender, Node
+from apaa.learning.recommendation.base import KNNRecommender
 from apaa.learning.recommendation.embedding.base import \
     KNNNodeEmbeddingRecommender
 from apaa.learning.recommendation.embedding.numba_distance import jaccard
@@ -55,7 +55,7 @@ class BagOfWordsRecommender(KNNRecommender):
         else:
             print("Warning: distance matrix not initialized")
 
-    def predict_one(self, example: agda.Definition) -> List[Tuple[float, Node]]:
+    def predict_one(self, example: agda.Definition) -> List[Tuple[float, mytypes.Node]]:
         node = example.name
         if node not in self.example_to_i:
             raise ValueError(f"Unknown example {node}")
