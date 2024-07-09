@@ -17,7 +17,7 @@ Node = mytypes.NODE
 def get_theorems_and_other(
     definition_ids_in_order: list[Node],
     id_to_definition: dict[Node, agda.Definition],
-    theorem_like_tag: mytypes.Node,
+    theorem_like_tag: mytypes.NodeType,
 ) -> tuple[list[Node], list[Node]]:
     function_indices: list[Node] = []
     other_indices: list[Node] = []
@@ -39,7 +39,7 @@ def check_validity_of_train_test_entries(
     function_ids: list[Node],
     train_entries: list[Node] | None,
     test_entries: list[Node] | None,
-    theorem_like_tag: mytypes.Node,
+    theorem_like_tag: mytypes.NodeType,
 ) -> tuple[bool, str]:
     if (train_entries is None) != (test_entries is None):
         raise ValueError("Either both or none of test/train defs must be given.")
@@ -68,8 +68,8 @@ def prepare_dataset(
     nx.MultiDiGraph,
     Tuple[Dict[Node, agda.Definition], Dict[Node, agda.Definition]],
     Tuple[
-        List[Tuple[Node, Node, mytypes.Edge]],
-        List[Tuple[Node, Node, mytypes.Edge]],
+        List[Tuple[Node, Node, mytypes.EdgeType]],
+        List[Tuple[Node, Node, mytypes.EdgeType]],
     ],
 ]:
     """
@@ -78,7 +78,7 @@ def prepare_dataset(
     3. Return (modified graph, (train defs, test defs), (positive edges, negative edges))
     """
     random.seed(seed)
-    theorem_like_tag = mytypes.Node.get_theorem_like_tag(graph)
+    theorem_like_tag = mytypes.NodeType.get_theorem_like_tag(graph)
     LOGGER.info(f"Theorem-like tag: {theorem_like_tag}")
     definitions_ids = sorted(id_to_definition)
     random.shuffle(definitions_ids)
@@ -140,7 +140,7 @@ def prepare_dataset(
 
 def prune_definition(
     current_graph: nx.MultiDiGraph, definition: agda.Definition, p_keep: float
-) -> Tuple[bool, agda.Definition, List[Tuple[Node, Node, mytypes.Edge]]]:
+) -> Tuple[bool, agda.Definition, List[Tuple[Node, Node, mytypes.EdgeType]]]:
     """
     1) treba je odstraniti povezave, ki predstavljajo približno 1 - p_keep teže
     2) One so posejane malo levo desno po drevesu, zato jih lahko enostavno naključno izberemo
@@ -197,16 +197,16 @@ def get_out_degrees_and_references(definition: agda.Definition):
 
 def get_edge_type(reference_name: str):
     if agda.Definition.is_with_definition(reference_name):
-        return mytypes.Edge.REFERENCE_IN_BODY_TO_WITH
+        return mytypes.EdgeType.REFERENCE_IN_BODY_TO_WITH
     elif agda.Definition.is_rewrite_definition(reference_name):
-        return mytypes.Edge.REFERENCE_IN_BODY_TO_REWRITE
+        return mytypes.EdgeType.REFERENCE_IN_BODY_TO_REWRITE
     else:
-        return mytypes.Edge.REFERENCE_IN_BODY
+        return mytypes.EdgeType.REFERENCE_IN_BODY
 
 
 def remove_references(
     current_graph: nx.MultiDiGraph, referenced_nodes, p_keep, definition
-) -> list[tuple[Node, Node, mytypes.Edge]]:
+) -> list[tuple[Node, Node, mytypes.EdgeType]]:
     referenced_nodes_heap = list(
         (-len(nodes), reference) for reference, nodes in referenced_nodes.items()
     )
@@ -294,8 +294,8 @@ def prepare_internal_cv_dataset(
     nx.MultiDiGraph,
     Tuple[Dict[Node, agda.Definition], Dict[Node, agda.Definition]],
     Tuple[
-        List[Tuple[Node, Node, mytypes.Edge]],
-        List[Tuple[Node, Node, mytypes.Edge]],
+        List[Tuple[Node, Node, mytypes.EdgeType]],
+        List[Tuple[Node, Node, mytypes.EdgeType]],
     ],
 ]:
     # split the definitions into n_folds parts

@@ -1,4 +1,13 @@
-import json
+import os
+import logging
+
+def clean_temp_files_in_dumps(logger: logging.Logger):
+    logger.info("Deleting .temp files ...")
+    dir = os.path.join("dumps", "experiments")
+    for file in os.listdir(dir):
+        if file.endswith(".temp"):
+            os.remove(os.path.join(dir, file))
+            
 
 
 def read_embeddings(embeddings_file_path: str) -> tuple[dict[str, list[float]], int]:
@@ -16,6 +25,7 @@ def read_embeddings(embeddings_file_path: str) -> tuple[dict[str, list[float]], 
         embeddings[name] = [float(x) for x in embedding]
         if not embedding_size:
             embedding_size = len(embedding)
+    return embeddings, embedding_size
 
 
 # def read_embeddings(

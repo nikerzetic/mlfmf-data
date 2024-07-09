@@ -8,6 +8,7 @@ from typing import Any, Dict, List, Optional, SupportsFloat, Tuple, Type
 import networkx as nx
 import tqdm
 
+import apaa.helpers.utils as utils
 import apaa.data.structures.agda as agda
 import apaa.helpers.original as helpers
 import apaa.helpers.types as mytypes
@@ -27,8 +28,8 @@ Dataset = tuple[
     nx.MultiDiGraph,
     tuple[dict[Node, agda.Definition], dict[Node, agda.Definition]],
     tuple[
-        List[Tuple[Node, Node, mytypes.Edge]],
-        List[Tuple[Node, Node, mytypes.Edge]],
+        List[Tuple[Node, Node, mytypes.EdgeType]],
+        List[Tuple[Node, Node, mytypes.EdgeType]],
     ],
 ]
 
@@ -78,7 +79,7 @@ def learn_and_predict(
     train_defs, test_defs = defs
     positive_edges, negative_edges = edges
     definitions_for_training = {**train_defs, **test_defs}
-    if isinstance(model_class, recommendation.GNN):
+    if issubclass(model_class, recommendation.GNN):
         # HACK, TODO: hardcoded workaround, because we need to know, which edges were removed
         definitions_for_training = (
             definitions_for_training,
@@ -94,6 +95,9 @@ def learn_and_predict(
         fit_args,
         meta_file,
     )
+    if issubclass(model_class, recommendation.GNN):
+        # HACK, TODO
+        definitions_for_training = {**train_defs, **test_defs}
     if not should_continue:
         LOGGER.info("Stopping the experiment ...")
         return
@@ -187,8 +191,8 @@ def predict_and_evaluate(
     train_graph: nx.MultiDiGraph,
     defs_for_training: dict[Node, agda.Definition],
     test_definitions: dict[Node, agda.Definition],
-    positive_edges: List[Tuple[Node, Node, mytypes.Edge]],
-    negative_edges: List[Tuple[Node, Node, mytypes.Edge]],
+    positive_edges: List[Tuple[Node, Node, mytypes.EdgeType]],
+    negative_edges: List[Tuple[Node, Node, mytypes.EdgeType]],
     actual_k: int,
     model: recommendation.BaseRecommender,
     compute_recommender_style: bool,
@@ -254,8 +258,8 @@ def evaluate_recommender_style(
 
 def evaluate_classification_style(
     defs_for_training: dict[Node, agda.Definition],
-    positive_edges: List[Tuple[Node, Node, mytypes.Edge]],
-    negative_edges: List[Tuple[Node, Node, mytypes.Edge]],
+    positive_edges: List[Tuple[Node, Node, mytypes.EdgeType]],
+    negative_edges: List[Tuple[Node, Node, mytypes.EdgeType]],
     model: recommendation.BaseRecommender,
     measures_classification: evaluation.QualityMeasureClassification,
     results_classification: dict[
@@ -433,7 +437,7 @@ def create_no_arg_configs() -> Configs:
 
 def create_gnn_configs() -> Configs:
     # TODO: change this
-    return [("default", {"node_attributes_file": "/home/nik/Projects/mlfmf/stdlib/"})]
+    return [("default", {"node_attributes_file": "D:/Nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/stdlib.tsv", "logger": LOGGER})]
 
 
 def create_node_to_vec_configs() -> Configs:
@@ -562,8 +566,9 @@ def learn_one_group(
 
 
 if __name__ == "__main__":
+    utils.clean_temp_files_in_dumps(LOGGER)
     learn_recommender_models(
-        "/home/nik/Projects/mlfmf/stdlib/",  # change this
+        "D:/Nik/Projects/mlfmf/stdlib/",  # change this
         dummy=True,
         bow=False,
         tfidf=False,
@@ -572,6 +577,6 @@ if __name__ == "__main__":
         node_to_vec=False,
         gnn=True,
         p_def_to_keep=0.1,
-        force=True,
+        force=False,
     )
     LOGGER.info("Done")

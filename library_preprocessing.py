@@ -158,7 +158,7 @@ def create_internal_cv_dataset(
         with open(dataset_file, "rb") as f:
             train_graph, (train_defs, external_test_defs), _ = pickle.load(f)
 
-        theorem_like_tag = mytypes.Node.get_theorem_like_tag(train_graph)
+        theorem_like_tag = mytypes.NodeType.get_theorem_like_tag(train_graph)
         ids_in_order = sorted(train_defs)
         definitions_ids, _ = get_theorems_and_other(
             ids_in_order, train_defs, theorem_like_tag

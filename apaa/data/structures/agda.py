@@ -19,13 +19,13 @@ class Node:
 
     def __init__(
         self,
-        node_type: mytypes.Node,
+        node_type: mytypes.NodeType,
         node_description: str,
         parent: Optional["Node"],
         children: List["Node"],
     ):
         self._id = Node._generate_next_id()
-        self._node_type: mytypes.Node = node_type
+        self._node_type: mytypes.NodeType = node_type
         self._node_description: str = node_description
         self._parent: Optional[Node] = parent
         self._children: List[Node] = children
@@ -61,7 +61,7 @@ class Node:
         )
 
     @property
-    def node_type(self) -> mytypes.Node:
+    def node_type(self) -> mytypes.NodeType:
         return self._node_type
 
     @property
@@ -130,14 +130,14 @@ class Node:
     @property
     def name(self) -> mytypes.NODE:
         """Does some checks regarding the format of the node description and returns it."""
-        if not mytypes.Node.is_name(self.node_type):
+        if not mytypes.NodeType.is_name(self.node_type):
             raise ValueError(
                 f"Cannot get the name of node of type {self.node_type} (not a name!)"
             )
         if not (self.node_description[0] == self.node_description[-1] == '"'):
             raise ValueError(f"Expected quotation marks in {self.node_description}")
         if (
-            self.node_type == mytypes.Node.MODULE_NAME
+            self.node_type == mytypes.NodeType.MODULE_NAME
             and self.node_description.count(" ") != 0
         ):
             raise ValueError(
@@ -211,7 +211,7 @@ class Tree:
         Takes care of (:node) and (:ref) nodes.
 
         """
-        entry_nodes = [n for n in self.root.nodes if n.node_type == mytypes.Node.ENTRY]
+        entry_nodes = [n for n in self.root.nodes if n.node_type == mytypes.NodeType.ENTRY]
         for entry_root in entry_nodes:
             type_root = entry_root.children[1]
             if type_root.children:
@@ -223,10 +223,10 @@ class Tree:
     def _tree_to_dag_helper(self, root_node: Node):
         node_map: dict[str, Node] = {}
         current_node = root_node
-        while current_node.node_type == mytypes.Node.NODE:
+        while current_node.node_type == mytypes.NodeType.NODE:
             node_map[current_node.node_description] = current_node.children[0]
             current_node = current_node.children[1]
-        ref_nodes = [n for n in root_node.nodes if n.node_type == mytypes.Node.REF]
+        ref_nodes = [n for n in root_node.nodes if n.node_type == mytypes.NodeType.REF]
         for ref_node in ref_nodes:
             which_ref = node_map[ref_node.node_description]
             parent_node = ref_node.parent
@@ -252,10 +252,10 @@ class Tree:
         (:module-name "foo.bar.Baz"). This function fixes this.
         """
         for node in self.nodes:
-            if node.node_type == mytypes.Node.MODULE_NAME and not node.node_description:
+            if node.node_type == mytypes.NodeType.MODULE_NAME and not node.node_description:
                 assert (
                     len(node.children) == 1
-                    and node.children[0].node_type == mytypes.Node.NAME
+                    and node.children[0].node_type == mytypes.NodeType.NAME
                     and node.children[0].node_description
                 )
                 node.node_description = node.children[0].node_description
@@ -376,12 +376,12 @@ class Tree:
         allowed = [
             tag.value
             for tag in [
-                mytypes.Node.MODULE,
-                mytypes.Node.MODULE_NAME,
-                mytypes.Node.NAME,
+                mytypes.NodeType.MODULE,
+                mytypes.NodeType.MODULE_NAME,
+                mytypes.NodeType.NAME,
             ]
         ]
-        if mytypes.Node.ENTRY.value not in raw:
+        if mytypes.NodeType.ENTRY.value not in raw:
             return (0, len(raw) - 1), []
         for i, c in enumerate(raw):
             if c == "(" and not any(
@@ -394,7 +394,7 @@ class Tree:
         # find entries
         i_start = -1
         count = -1
-        entry = mytypes.Node.ENTRY.value
+        entry = mytypes.NodeType.ENTRY.value
         in_string = False
         global_count = 0
         for i, c in enumerate(raw):
@@ -454,15 +454,15 @@ class Tree:
         return Node(node_type, rest, None, [])
 
     @staticmethod
-    def extract_tags(node_body: str) -> Tuple[List[mytypes.Node], str]:
-        node_tags: List[mytypes.Node] = []
+    def extract_tags(node_body: str) -> Tuple[List[mytypes.NodeType], str]:
+        node_tags: List[mytypes.NodeType] = []
         found_any = True
         while node_body and found_any:
             first_part = node_body
             if " " in first_part:
                 first_part = first_part[: first_part.find(" ")]
             found_any = False
-            for tag in mytypes.Node:
+            for tag in mytypes.NodeType:
                 if first_part == tag.value:
                     node_tags.append(tag)
                     node_body = node_body[len(tag.value) :].strip()
@@ -626,7 +626,7 @@ class Definition(Tree):
                 tree = Tree.parse_raw_sexp(path, raw_sexp)
                 # find a single entry
                 the_entry_node = tree.root.children[1]
-                assert the_entry_node.node_type == mytypes.Node.ENTRY
+                assert the_entry_node.node_type == mytypes.NodeType.ENTRY
                 definition = Definition(tree.info, the_entry_node, is_internal)
                 Definition.dump_to_dag_file(definition, out_path)
             with open(finished, "w") as _:
@@ -720,7 +720,7 @@ class Definition(Tree):
 
     def _find_module_name(self):
         node = self.root
-        while node is not None and node.node_type != mytypes.Node.MODULE:
+        while node is not None and node.node_type != mytypes.NodeType.MODULE:
             node = node.parent
         if node is None:
             raise ValueError(f"Could not found module for {self.name}")
@@ -799,14 +799,14 @@ class Definition(Tree):
 
     @staticmethod
     def dummy_definition(identifier: mytypes.NODE) -> "Definition":
-        dummy_module = Node(mytypes.Node.MODULE, "", None, [])
-        module_name = Node(mytypes.Node.MODULE_NAME, '"a.dummy.module"', None, [])
-        root_node = Node(mytypes.Node.EXTERNAL, "", None, [])
+        dummy_module = Node(mytypes.NodeType.MODULE, "", None, [])
+        module_name = Node(mytypes.NodeType.MODULE_NAME, '"a.dummy.module"', None, [])
+        root_node = Node(mytypes.NodeType.EXTERNAL, "", None, [])
         name_node = Node(
-            mytypes.Node.NAME, Node.name_to_description(identifier), None, []
+            mytypes.NodeType.NAME, Node.name_to_description(identifier), None, []
         )
-        type_node = Node(mytypes.Node.EXTERNAL, "", None, [])
-        body_node = Node(mytypes.Node.EXTERNAL, "", None, [])
+        type_node = Node(mytypes.NodeType.EXTERNAL, "", None, [])
+        body_node = Node(mytypes.NodeType.EXTERNAL, "", None, [])
         Node.connect_parent_to_children(dummy_module, [module_name, root_node])
         Node.connect_parent_to_children(root_node, [name_node, type_node, body_node])
         return Definition(helpers.Locations.NON_FILE, root_node, False)

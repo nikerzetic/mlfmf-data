@@ -3,6 +3,7 @@ from typing import *
 import dgl
 import torch
 import itertools
+import logging
 import networkx as nx
 import numpy as np
 import scipy.sparse as sp
@@ -18,9 +19,10 @@ from sklearn.metrics import roc_auc_score
 
 class GNN(BaseRecommender):
 
-    def __init__(self, k: Literal["all"] | int, node_attributes_file: str):
+    def __init__(self, k: Literal["all"] | int, node_attributes_file: str, logger: logging.Logger):
         # super().__init__("default model", k)
         self.node_attributes = node_attributes_file
+        self.logger = logger
         # HACK: I've been following the practices of the original code, but I don't like
         # how instance attributes are assigned in fit method; so I'm choosing to declare
         # them in init. I cannot assign them herre, because graph is only passed to fit
@@ -52,11 +54,15 @@ class GNN(BaseRecommender):
         # TODO: ensure we don't override the original graph
         self._encode_node_labels(graph)
         self._encode_edge_labels(graph)
+        self.logger.info("Adding embeddings to nodes...")
         self._add_embeddings_to_nodes(graph, self.node_attributes)
+        self.logger.info("Done")
 
+        self.logger.info("Preparing train network...")
         train_pos_network, train_neg_network = self._prepare_train_network(
             graph, definitions
         )
+        self.logger.info("Done")
 
         # TODO: that shape[1] is sus
         self.model = helpers.GraphSAGE(self.network.ndata["encoded label"].shape[1], 16)
@@ -137,14 +143,15 @@ class GNN(BaseRecommender):
             graph.nodes[node]["embedding"] = self.embeddings.get(
                 node, [0 for _ in range(self.embedding_size)]
             )
+        self.logger.info("Done")
 
     def _prepare_train_network(
         self,
         graph: nx.DiGraph,
         rerserved_for_test: Tuple[
-            dict[mytypes.Node, agda.Definition],
-            list[Tuple[mytypes.Node, mytypes.Node, mytypes.Edge]],
-            list[Tuple[mytypes.Node, mytypes.Node, mytypes.Edge]],
+            dict[mytypes.NodeType, agda.Definition],
+            list[Tuple[mytypes.NodeType, mytypes.NodeType, mytypes.EdgeType]],
+            list[Tuple[mytypes.NodeType, mytypes.NodeType, mytypes.EdgeType]],
         ],
     ):
         # TODO: make this in line with already split graph
@@ -257,7 +264,7 @@ class GNN(BaseRecommender):
         train_pos_network: dgl.DGLGraph,
         train_neg_network: dgl.DGLGraph,
     ):
-        for e in range(5000):  # TODO: make this a parameter
+        for e in range(26000):  # TODO: make this a parameter
             # forward
             self.curent_predictions = self.model(self.network, self.ndata["embedding"])
             pos_score = self.predictor(train_pos_network, self.curent_predictions)
@@ -269,8 +276,8 @@ class GNN(BaseRecommender):
             loss.backward()
             optimizer.step()
 
-            # if e % 500 == 0:
-            #     print("In epoch {}, loss: {}".format(e, loss))
+            if e % 1000 == 0:
+                self.logger.info(f"In epoch {e}, loss: {loss}")
 
     def _test(
         self,

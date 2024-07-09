@@ -89,10 +89,10 @@ class QualityMeasureRecommender:
             )
         for node, edges in self.kg[fact].items():
             if (
-                mytypes.Edge.REFERENCE_IN_BODY in edges
+                mytypes.EdgeType.REFERENCE_IN_BODY in edges
                 and agda.Definition.is_normal_definition(node)
             ):
-                w = edges[mytypes.Edge.REFERENCE_IN_BODY]["w"]
+                w = edges[mytypes.EdgeType.REFERENCE_IN_BODY]["w"]
                 actual_neighbours[node] = w
                 if w > top_neighbours[-1][0]:
                     n_updates += 1
@@ -167,7 +167,7 @@ class QualityMeasureRecommender:
         for u, v, e_type, w in total_graph.edges(keys=True, data="w"):
             if (
                 u not in test_definitions
-                or e_type != mytypes.Edge.REFERENCE_IN_BODY
+                or e_type != mytypes.EdgeType.REFERENCE_IN_BODY
             ):
                 continue
             if not train_graph.has_edge(u, v, e_type):

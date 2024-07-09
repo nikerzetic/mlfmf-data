@@ -12,7 +12,7 @@ ARRAY_2D = np.ndarray[Tuple[int, int], np.dtype[np.float64]]
 INT_ARRAY_1D = np.ndarray[int, np.dtype[np.int_]]
 
 
-class Edge(Enum):
+class EdgeType(Enum):
     DEFINES = "DEFINES"
     CONTAINS = "CONTAINS"
 
@@ -29,33 +29,33 @@ class Edge(Enum):
         return self.value
 
     def with_to_normal(self):
-        if self == Edge.REFERENCE_IN_TYPE_TO_WITH:
-            return Edge.REFERENCE_IN_TYPE
-        elif self == Edge.REFERENCE_IN_BODY_TO_WITH:
-            return Edge.REFERENCE_IN_BODY
+        if self == EdgeType.REFERENCE_IN_TYPE_TO_WITH:
+            return EdgeType.REFERENCE_IN_TYPE
+        elif self == EdgeType.REFERENCE_IN_BODY_TO_WITH:
+            return EdgeType.REFERENCE_IN_BODY
         else:
             raise ValueError(f"Cannot normalize non-with edge type {self}")
 
     def normal_to_with(self):
-        if self == Edge.REFERENCE_IN_TYPE:
-            return Edge.REFERENCE_IN_TYPE_TO_WITH
-        elif self == Edge.REFERENCE_IN_BODY:
-            return Edge.REFERENCE_IN_BODY_TO_WITH
+        if self == EdgeType.REFERENCE_IN_TYPE:
+            return EdgeType.REFERENCE_IN_TYPE_TO_WITH
+        elif self == EdgeType.REFERENCE_IN_BODY:
+            return EdgeType.REFERENCE_IN_BODY_TO_WITH
         raise ValueError(f"{self} --> with!?")
 
     def rewrite_to_normal(self):
-        if self == Edge.REFERENCE_IN_BODY_TO_REWRITE:
-            return Edge.REFERENCE_IN_BODY
-        elif self == Edge.REFERENCE_IN_TYPE_TO_REWRITE:
-            return Edge.REFERENCE_IN_TYPE
+        if self == EdgeType.REFERENCE_IN_BODY_TO_REWRITE:
+            return EdgeType.REFERENCE_IN_BODY
+        elif self == EdgeType.REFERENCE_IN_TYPE_TO_REWRITE:
+            return EdgeType.REFERENCE_IN_TYPE
         else:
             raise ValueError(f"{self} --> normal!?")
 
     def normal_to_rewrite(self):
-        if self == Edge.REFERENCE_IN_TYPE:
-            return Edge.REFERENCE_IN_TYPE_TO_REWRITE
-        elif self == Edge.REFERENCE_IN_BODY:
-            return Edge.REFERENCE_IN_BODY_TO_REWRITE
+        if self == EdgeType.REFERENCE_IN_TYPE:
+            return EdgeType.REFERENCE_IN_TYPE_TO_REWRITE
+        elif self == EdgeType.REFERENCE_IN_BODY:
+            return EdgeType.REFERENCE_IN_BODY_TO_REWRITE
         else:
             raise ValueError(f"{self} --> rewrite!?")
 
@@ -63,15 +63,15 @@ class Edge(Enum):
         return self.value.startswith("REFERENCE")
 
     def is_normal_reference(self):
-        return self == Edge.REFERENCE_IN_TYPE or self == Edge.REFERENCE_IN_BODY
+        return self == EdgeType.REFERENCE_IN_TYPE or self == EdgeType.REFERENCE_IN_BODY
 
     def is_normal(self):
         return (
-            self.is_normal_reference() or self == Edge.DEFINES or self == Edge.CONTAINS
+            self.is_normal_reference() or self == EdgeType.DEFINES or self == EdgeType.CONTAINS
         )
 
 
-class Node(Enum):
+class NodeType(Enum):
     # Agda and Lean
     ABSTRACT = ":abstract"
     APPLY = ":apply"
@@ -179,40 +179,40 @@ class Node(Enum):
     BAZ = ":baz"
 
     def is_name(self):
-        return self in [Node.NAME, Node.MODULE_NAME]
+        return self in [NodeType.NAME, NodeType.MODULE_NAME]
 
     def is_external(self):
         return self in [
-            Node.EXTERNAL,
-            Node.EXTERNAL_MODULE,
-            Node.EXTERNAL_LIBRARY,
+            NodeType.EXTERNAL,
+            NodeType.EXTERNAL_MODULE,
+            NodeType.EXTERNAL_LIBRARY,
         ]
 
     def is_module(self):
-        return self in [Node.MODULE, Node.EXTERNAL_MODULE]
+        return self in [NodeType.MODULE, NodeType.EXTERNAL_MODULE]
 
     def is_definition_type(self):
         return self in [
-            Node.FUNCTION,
-            Node.CONSTRUCTOR,
-            Node.RECORD,
-            Node.DATA,
-            Node.AXIOM,
-            Node.PRIMITIVE,
-            Node.SORT,
+            NodeType.FUNCTION,
+            NodeType.CONSTRUCTOR,
+            NodeType.RECORD,
+            NodeType.DATA,
+            NodeType.AXIOM,
+            NodeType.PRIMITIVE,
+            NodeType.SORT,
         ]
 
     def __str__(self):
         return self.value
 
     @staticmethod
-    def get_theorem_like_tag(graph: nx.MultiDiGraph) -> "Node":
+    def get_theorem_like_tag(graph: nx.MultiDiGraph) -> "NodeType":
         """
         Returns THEOREM if any :theorem is present, and FUNCTION otherwise.
         """
         for node, props in graph.nodes(data=True):
-            if not isinstance(props["label"], Node):
+            if not isinstance(props["label"], NodeType):
                 raise ValueError(f"Should be node type, got {node}: {props}")
-            if props["label"] == Node.THEOREM:
-                return Node.THEOREM
-        return Node.FUNCTION
+            if props["label"] == NodeType.THEOREM:
+                return NodeType.THEOREM
+        return NodeType.FUNCTION

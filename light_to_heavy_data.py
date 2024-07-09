@@ -12,7 +12,7 @@ from light_weight_data_loader import Entry, EntryNode, load_library
 
 
 def create_heavy_entry(entry_node: EntryNode) -> agda.Node:
-    node_type = mytypes.Node(entry_node.type)
+    node_type = mytypes.NodeType(entry_node.type)
     description = entry_node.description
     return agda.Node(node_type, description, None, [])
 
@@ -38,9 +38,9 @@ def convert_entry(entry: Entry, module_name: str, is_internal: bool) -> agda.Def
     # create tree that looks like
     #        module node
     #   module name     entry tree
-    module_node = agda.Node(mytypes.Node.MODULE, "", None, [])
+    module_node = agda.Node(mytypes.NodeType.MODULE, "", None, [])
     entry_root = converted[entry.root.id]
-    module_name_node = agda.Node(mytypes.Node.MODULE_NAME, module_name, None, [])
+    module_name_node = agda.Node(mytypes.NodeType.MODULE_NAME, module_name, None, [])
     agda.Node.connect_parent_to_children(module_node, [module_name_node, entry_root])
     tree = agda.Definition(entry.name, entry_root, is_internal)
     return tree

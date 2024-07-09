@@ -55,7 +55,7 @@ class BagOfWordsRecommender(KNNRecommender):
         else:
             print("Warning: distance matrix not initialized")
 
-    def predict_one(self, example: agda.Definition) -> List[Tuple[float, mytypes.Node]]:
+    def predict_one(self, example: agda.Definition) -> List[Tuple[float, mytypes.NodeType]]:
         node = example.name
         if node not in self.example_to_i:
             raise ValueError(f"Unknown example {node}")

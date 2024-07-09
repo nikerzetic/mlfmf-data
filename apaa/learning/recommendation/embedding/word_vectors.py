@@ -144,7 +144,7 @@ class EmbeddingAnalogiesRecommender(WordEmbeddingRecommender):
 
     def _compute_node_to_module(
         self, training_nodes: Set[Node]
-    ) -> tuple[dict[Node, tuple[mytypes.Edge, Node]], dict[Node, list[Node]]]:
+    ) -> tuple[dict[Node, tuple[mytypes.EdgeType, Node]], dict[Node, list[Node]]]:
         """
         Computes a module that contains given node
         (which is either a definition or a (sub)module).
@@ -155,19 +155,19 @@ class EmbeddingAnalogiesRecommender(WordEmbeddingRecommender):
                   in the training graph.
             m2n= {module: [def, ...], ...} where defs are directly defined in module
         """
-        n2m: dict[Node, tuple[mytypes.Edge, Node]] = {}
+        n2m: dict[Node, tuple[mytypes.EdgeType, Node]] = {}
         reversed_g = nx.reverse(self.graph)
         for source, sink, e_type in reversed_g.edges(keys=True):
             if (
-                e_type == mytypes.Edge.DEFINES
-                or e_type == mytypes.Edge.CONTAINS
+                e_type == mytypes.EdgeType.DEFINES
+                or e_type == mytypes.EdgeType.CONTAINS
             ):
                 n2m[source] = (e_type, sink)
         m2n: dict[Node, list[Node]] = {}  # module: definitions directly in this module
         for node, (e_type, module) in n2m.items():
             if module not in m2n:
                 m2n[module] = []
-            if e_type == mytypes.Edge.DEFINES and node in training_nodes:
+            if e_type == mytypes.EdgeType.DEFINES and node in training_nodes:
                 m2n[module].append(node)
         return n2m, m2n
 
@@ -188,6 +188,6 @@ class EmbeddingAnalogiesRecommender(WordEmbeddingRecommender):
                 for ref, edges_to_ref in self.graph[direct_def].items():
                     if (
                         ref in training_nodes
-                        and mytypes.Edge.REFERENCE_IN_BODY in edges_to_ref
+                        and mytypes.EdgeType.REFERENCE_IN_BODY in edges_to_ref
                     ):
                         self.direct_candidates[module].append((direct_def, ref))

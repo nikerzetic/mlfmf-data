@@ -135,8 +135,8 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
         graph: nx.MultiDiGraph,
         edge_file: str | None,
     ) -> Tuple[
-        List[Tuple[mytypes.NODE, mytypes.NODE, mytypes.Edge]],
-        List[Tuple[mytypes.NODE, mytypes.NODE, mytypes.Edge]],
+        List[Tuple[mytypes.NODE, mytypes.NODE, mytypes.EdgeType]],
+        List[Tuple[mytypes.NODE, mytypes.NODE, mytypes.EdgeType]],
     ]:
         """
         Consider definition functions only. Then, just randomly sample.
@@ -144,17 +144,17 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
         Will do that later.
         """
         definitions: List[mytypes.NODE] = []
-        theorem_like_label = mytypes.Node.get_theorem_like_tag(graph)
+        theorem_like_label = mytypes.NodeType.get_theorem_like_tag(graph)
         for node, label in graph.nodes(data="label"):  # type: ignore
             if label == theorem_like_label:
                 definitions.append(node)  # type: ignore
-        positive_edges: List[Tuple[str, str, mytypes.Edge]] = []
+        positive_edges: List[Tuple[str, str, mytypes.EdgeType]] = []
         n_edges_per_node: Dict[Node, int] = {node: 0 for node in definitions}
         for u, v, e_type in graph.edges(nbunch=definitions, keys=True):  # type: ignore
-            if e_type == mytypes.Edge.REFERENCE_IN_BODY:
+            if e_type == mytypes.EdgeType.REFERENCE_IN_BODY:
                 positive_edges.append((u, v, e_type))  # type: ignore
                 n_edges_per_node[u] += 1  # type: ignore
-        negative_edges: List[Tuple[str, str, mytypes.Edge]] = []
+        negative_edges: List[Tuple[str, str, mytypes.EdgeType]] = []
         # randomly sample
         for node, count in n_edges_per_node.items():
             negative_edges.extend(
@@ -173,7 +173,7 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
                             lambda fp, origin=node: (
                                 origin,
                                 fp,
-                                mytypes.Edge.REFERENCE_IN_BODY,
+                                mytypes.EdgeType.REFERENCE_IN_BODY,
                             ),
                             false_positives[node][:count],
                         )
@@ -225,7 +225,7 @@ class BaseEdgeEmbeddingRecommender(BaseRecommender):
             node
             for node in self.node_to_index
             if not self.graph.has_edge(
-                example.name, node, mytypes.Edge.REFERENCE_IN_BODY
+                example.name, node, mytypes.EdgeType.REFERENCE_IN_BODY
             )
         ]
         return self.predict_edges(example.name, candidates)
