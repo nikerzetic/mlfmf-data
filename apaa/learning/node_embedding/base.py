@@ -1,5 +1,4 @@
 from platform import node
-from tkinter import X
 from typing import Any, Dict, List, Optional, Tuple
 
 import networkx as nx

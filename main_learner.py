@@ -78,6 +78,13 @@ def learn_and_predict(
     train_defs, test_defs = defs
     positive_edges, negative_edges = edges
     definitions_for_training = {**train_defs, **test_defs}
+    if isinstance(model_class, recommendation.GNN):
+        # HACK, TODO: hardcoded workaround, because we need to know, which edges were removed
+        definitions_for_training = (
+            definitions_for_training,
+            positive_edges,
+            negative_edges,
+        )
     should_continue, model, t_learn, did_learn = learn(
         model_dump_file,
         model_class,
@@ -332,6 +339,7 @@ def learn_recommender_models(
     word_embedding: bool = True,
     analogies: bool = True,
     node_to_vec: bool = True,
+    gnn: bool = True,
     p_def_to_keep: float = 0.0,
     force: bool = False,
 ):
@@ -405,11 +413,27 @@ def learn_recommender_models(
             node_to_vec_configs,
             force,
         )
+    if gnn:
+        LOGGER.info("Grarph neural network ...")
+        gnn_configs = create_gnn_configs()
+        learn_one_group(
+            recommendation.GNN,
+            library_path,
+            dataset,
+            p_def_to_keep,
+            gnn_configs,
+            force
+        )
     LOGGER.info("\n\n")
 
 
 def create_no_arg_configs() -> Configs:
     return [("empty", {})]
+
+
+def create_gnn_configs() -> Configs:
+    # TODO: change this
+    return [("default", {"node_attributes_file": "/home/nik/Projects/mlfmf/stdlib/"})]
 
 
 def create_node_to_vec_configs() -> Configs:
@@ -537,16 +561,17 @@ def learn_one_group(
         gc.collect()
 
 
-# if __name__ == "__main__":
-#     learn_recommender_models(
-#         "your/path/to/mathlib",  # change this
-#         dummy=True,
-#         bow=True,
-#         tfidf=True,
-#         word_embedding=True,
-#         analogies=True,
-#         node_to_vec=True,
-#         p_def_to_keep=0.1,
-#         force=False,
-#     )
-#     LOGGER.info("Done")
+if __name__ == "__main__":
+    learn_recommender_models(
+        "/home/nik/Projects/mlfmf/stdlib/",  # change this
+        dummy=True,
+        bow=False,
+        tfidf=False,
+        word_embedding=False,
+        analogies=False,
+        node_to_vec=False,
+        gnn=True,
+        p_def_to_keep=0.1,
+        force=True,
+    )
+    LOGGER.info("Done")

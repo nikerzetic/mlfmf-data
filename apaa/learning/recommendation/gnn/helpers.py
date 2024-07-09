@@ -1,5 +1,6 @@
 import torch
 
+import dgl
 import torch.nn.functional as torchfn
 import torch.nn as nn
 import dgl.function as dglfn
@@ -22,7 +23,7 @@ class GraphSAGE(nn.Module):
 
 
 class DotPredictor(nn.Module):
-    def forward(self, g, h):
+    def forward(self, g: dgl.DGLGraph, h):
         with g.local_scope():
             g.ndata['h'] = h
             # Compute a new edge feature named 'score' by a dot-product between the
@@ -58,7 +59,7 @@ class MLPPredictor(nn.Module):
         h = torch.cat([edges.src['h'], edges.dst['h']], 1)
         return {'score': self.W2(torchfn.relu(self.W1(h))).squeeze(1)}
 
-    def forward(self, g, h):
+    def forward(self, g: dgl.DGLGraph, h: torch.Tensor):
         with g.local_scope():
             g.ndata['h'] = h
             g.apply_edges(self.apply_edges)

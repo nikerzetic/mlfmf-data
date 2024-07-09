@@ -9,3 +9,4 @@ from .embedding.word_simple import BagOfWordsRecommender, TFIDFRecommender
 from .embedding.word_vectors import (EmbeddingAnalogiesRecommender,
                                      WordEmbeddingRecommender)
 from .two_hops import EdgeWeightScheme, NodeWeightScheme, TwoHops
+from .gnn import GNN
