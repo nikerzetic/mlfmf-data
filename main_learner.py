@@ -421,12 +421,7 @@ def learn_recommender_models(
         LOGGER.info("Grarph neural network ...")
         gnn_configs = create_gnn_configs()
         learn_one_group(
-            recommendation.GNN,
-            library_path,
-            dataset,
-            p_def_to_keep,
-            gnn_configs,
-            force
+            recommendation.GNN, library_path, dataset, p_def_to_keep, gnn_configs, force
         )
     LOGGER.info("\n\n")
 
@@ -437,7 +432,17 @@ def create_no_arg_configs() -> Configs:
 
 def create_gnn_configs() -> Configs:
     # TODO: change this
-    return [("default", {"node_attributes_file": "D:/Nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/stdlib.tsv", "logger": LOGGER})]
+    return [
+        (
+            "default",
+            {
+                "node_attributes_file": "D:/Nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/stdlib.tsv",
+                "predict_file": "D:/Nik/Projects/mlfmf-poskusi/data/code2seq/stdlib/predict.c2s",
+                "label2raw_dict_file": "D:/Nik/Projects/mlfmf-poskusi/data/raw/stdlib/dictionaries/label2raw.json",
+                "logger": LOGGER,
+            },
+        )
+    ]
 
 
 def create_node_to_vec_configs() -> Configs:

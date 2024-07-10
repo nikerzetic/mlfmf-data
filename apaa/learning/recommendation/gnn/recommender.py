@@ -19,9 +19,18 @@ from sklearn.metrics import roc_auc_score
 
 class GNN(BaseRecommender):
 
-    def __init__(self, k: Literal["all"] | int, node_attributes_file: str, logger: logging.Logger):
+    def __init__(
+        self,
+        k: Literal["all"] | int,
+        node_attributes_file: str,
+        predict_file: str,
+        label2raw_dict_file: str,
+        logger: logging.Logger,
+    ):
         # super().__init__("default model", k)
-        self.node_attributes = node_attributes_file
+        self.node_attributes_file = node_attributes_file
+        self.predictions_file = predict_file
+        self.label2raw_file = label2raw_dict_file
         self.logger = logger
         # HACK: I've been following the practices of the original code, but I don't like
         # how instance attributes are assigned in fit method; so I'm choosing to declare
@@ -45,7 +54,7 @@ class GNN(BaseRecommender):
         self,
         graph: nx.MultiDiGraph,
         definitions: Dict[mytypes.NODE, agda.Definition],
-        **kwargs: Any
+        **kwargs: Any,
     ) -> None:
         # The class works on dql.DGLGraph, so we don't keep the original graph as an attribute
         self.definitions = definitions
@@ -55,7 +64,7 @@ class GNN(BaseRecommender):
         self._encode_node_labels(graph)
         self._encode_edge_labels(graph)
         self.logger.info("Adding embeddings to nodes...")
-        self._add_embeddings_to_nodes(graph, self.node_attributes)
+        self._add_embeddings_to_nodes(graph)
         self.logger.info("Done")
 
         self.logger.info("Preparing train network...")
@@ -65,15 +74,11 @@ class GNN(BaseRecommender):
         self.logger.info("Done")
 
         # TODO: that shape[1] is sus
-        self.model = helpers.GraphSAGE(self.network.ndata["encoded label"].shape[1], 16)
+        self.model = helpers.GraphSAGE(self.network.ndata["embedding"].shape[1], 16)
 
-        # TODO: make this a parameter
-        optimizer = torch.optim.Adam(
-            itertools.chain(self.model.parameters(), self.predictor.parameters()),
-            lr=0.01,
-        )
 
-        self._train(optimizer, train_pos_network, train_neg_network)
+        self.logger.info("Training the model...")
+        self._train(train_pos_network, train_neg_network)
 
     def predict_one(self, node: agda.Definition) -> List[Tuple[float, mytypes.NODE]]:
         pass
@@ -133,17 +138,16 @@ class GNN(BaseRecommender):
                 float(item == label) for item in edge_labels_list
             ]
 
-    def _add_embeddings_to_nodes(self, graph: nx.DiGraph, embeddings_file_path: str):
+    def _add_embeddings_to_nodes(self, graph: nx.DiGraph):
         # We assume embeddings are lists of in
         self.embeddings, self.embedding_size = utils.read_embeddings(
-            embeddings_file_path
+           self.node_attributes_file, self.predictions_file, self.label2raw_file
         )
         for node in graph.nodes:
             # HACK: nodes without embedding get embedding 0
             graph.nodes[node]["embedding"] = self.embeddings.get(
-                node, [0 for _ in range(self.embedding_size)]
+                node, [float(0) for _ in range(self.embedding_size)]
             )
-        self.logger.info("Done")
 
     def _prepare_train_network(
         self,
@@ -164,22 +168,26 @@ class GNN(BaseRecommender):
             edge_attrs=["encoded label"],
         )
 
+        self.logger.info("...building dictionaries")
         # from_networkx relabels nodes in sorted()-ordering, starting at 0
         for name, tensor_id in zip(sorted(graph.nodes), self.network.nodes()):
             id = tensor_id.item()
             self.name2id[name] = id
             self.id2name[id] = name
 
+        self.logger.info("...translating test pos edges")
         test_pos_edges = []
         definitions, positive_edges, negative_eges = rerserved_for_test
         for u, v, _ in positive_edges:
             test_pos_edges.append(
-                (
+                [
                     self.name2id[definitions[u].name],
                     self.name2id[definitions[v].name],
-                )
+                ]
             )
-            
+        test_pos_edges = np.array(test_pos_edges)
+
+        self.logger.info("...translating test neg edges")
         test_neg_u = []
         test_neg_v = []
         for u, v, _ in negative_eges:
@@ -189,14 +197,53 @@ class GNN(BaseRecommender):
         source_nodes, destination_nodes = self.network.edges()
 
         edge_ids = np.arange(self.network.number_of_edges())
+        edge2id = {}
+        for u, v, id in zip(source_nodes, destination_nodes, edge_ids):
+            edge2id[u.item()] = {v.item(): id}
         edge_ids = np.random.permutation(edge_ids)
 
-        test_pos_mask = torch.Tensor(
-            [
-                (source_nodes[id], destination_nodes[id]) in test_pos_edges
-                for id in edge_ids
-            ]
+        self.logger.info(f"...building test pos mask")
+        test_pos_mask = torch.zeros(len(edge_ids), dtype=bool)
+        for e in test_pos_edges:
+            # BUG, TODO: there should be no test edges in the training graph
+            edge_id = edge2id.get(e[0], {}).get(e[1], False)
+            if edge_id:
+                test_pos_mask[edge_id] = 1
+            # for id in edge_ids:
+            #     if not source_nodes[id] == e[0]:
+            #         continue
+            #     if destination_nodes[id] == e[1]:
+            #         test_pos_mask[id] = 1
+            #         # HACK: we assume each edge appears only once
+            #         break
+
+        counter = [0, 0, 0]
+        for e in test_pos_edges:
+            eid = edge2id.get(e[0], {}).get(e[1], "good")
+            if eid == "good":
+                counter[0] += 1
+            else:
+                counter[1] += 1
+                u = self.id2name[e[0]]
+                v = self.id2name[e[1]]
+                if v in graph.succ[u]:
+                    counter[2] += 1
+        self.logger.warning(
+            f"There are {counter[1]} test edges in train network, and {counter[2]} of them are in the train graph"
         )
+
+        # for id in edge_ids:
+        #     in_test.append((source_nodes[id], destination_nodes[id]) in test_pos_edges)
+        #     if n % 1000 == 0:
+        #         self.logger.info(f"...at {round(100*n/N, 2)}%")
+        #     n += 1
+
+        # test_pos_mask = torch.Tensor(
+        #     [
+        #         (source_nodes[id], destination_nodes[id]) in test_pos_edges
+        #         for id in edge_ids
+        #     ]
+        # )
         # test_size
         # test_pos_u, test_pos_v = (
         #     source_nodes[edge_ids[:test_size]],
@@ -207,6 +254,7 @@ class GNN(BaseRecommender):
             destination_nodes[edge_ids[~test_pos_mask]],
         )
 
+        self.logger.info("...finding negative edges")
         # Find all negative edges and split them for training and testing
         adj_pos = sp.coo_matrix(
             (
@@ -215,9 +263,10 @@ class GNN(BaseRecommender):
             ),
             shape=(self.network.number_of_nodes(), self.network.number_of_nodes()),
         )
+        self.logger.info("...building test neg edges mask")
         adj_test = sp.coo_matrix(
             (
-                np.ones(len(source_nodes)),
+                np.ones(len(test_neg_u)),
                 (test_neg_u, test_neg_v),
             ),
             shape=(self.network.number_of_nodes(), self.network.number_of_nodes()),
@@ -237,17 +286,21 @@ class GNN(BaseRecommender):
         #     neg_source_nodes[neg_eids[:test_size]],
         #     neg_destination_nodes[neg_eids[:test_size]],
         # )
+
         train_neg_u, train_neg_v = (
             neg_source_nodes,
             neg_destination_nodes,
         )
 
+        self.logger.info("...buildling train pos and neg networks")
         train_pos_network = dgl.graph(
             (train_pos_u, train_pos_v), num_nodes=self.network.number_of_nodes()
         )
         train_neg_network = dgl.graph(
             (train_neg_u, train_neg_v), num_nodes=self.network.number_of_nodes()
         )
+
+        self.network = dgl.remove_edges(self.network, edge_ids[~test_pos_mask])
 
         return train_pos_network, train_neg_network
 
@@ -260,15 +313,26 @@ class GNN(BaseRecommender):
 
     def _train(
         self,
-        optimizer: torch.optim.Optimizer,
         train_pos_network: dgl.DGLGraph,
         train_neg_network: dgl.DGLGraph,
     ):
+        predictor = self.predictor
+        model = self.model
+        network = self.network
+
+        # TODO: make this a parameter
+        optimizer = torch.optim.Adam(
+            itertools.chain(model.parameters(), predictor.parameters()),
+            lr=0.01,
+        )
+
         for e in range(26000):  # TODO: make this a parameter
             # forward
-            self.curent_predictions = self.model(self.network, self.ndata["embedding"])
-            pos_score = self.predictor(train_pos_network, self.curent_predictions)
-            neg_score = self.predictor(train_neg_network, self.curent_predictions)
+            prediction = model(
+                network, network.ndata["embedding"]
+            )
+            pos_score = predictor(train_pos_network, prediction)
+            neg_score = predictor(train_neg_network, prediction)
             loss = helpers.compute_loss(pos_score, neg_score)
 
             # backward
@@ -278,6 +342,10 @@ class GNN(BaseRecommender):
 
             if e % 1000 == 0:
                 self.logger.info(f"In epoch {e}, loss: {loss}")
+        
+        self.curent_predictions = model(
+                network, network.ndata["embedding"]
+            )
 
     def _test(
         self,
