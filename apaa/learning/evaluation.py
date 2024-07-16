@@ -56,10 +56,11 @@ class QualityMeasureRecommender:
                 if similarity > 0.0:
                     smoothed_actual.append(max(1.0, similarity_of_kth / similarity))
         if len(ranks_actual) != len(actual_neighbours):
+            #BUG: this error is raised, when fact if in actual_neighbours
             raise ValueError(
                 f"fact: {fact}\n"
                 f"ranks actual: {ranks_actual}\n"
-                f"neigh. actual: {actual_neighbours}\npred: {predictions}"
+                f"neigh. actual: {actual_neighbours}\npred: {predictions[:self.k]}"
             )
         self.scores[QualityMeasureRecommender.P_PREDICTIONS_IN_ACTUAL].append(
             [p / self.k]

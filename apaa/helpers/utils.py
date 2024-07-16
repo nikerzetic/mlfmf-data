@@ -1,6 +1,9 @@
 import os
 import logging
 import json
+import io
+import pstats
+import cProfile
 
 def clean_temp_files_in_dumps(logger: logging.Logger):
     logger.info("Deleting .temp files ...")
@@ -73,3 +76,24 @@ def read_embeddings(
     embeddings_file.close()
 
     return embeddings, embeddings_size
+
+
+def myprofile(func):
+
+    def profiled_func(*args, **kwargs):
+        pr = cProfile.Profile()
+        pr.enable()
+        
+        returned_value = func(*args, **kwargs)
+
+        pr.disable()
+        s = io.StringIO()
+        sortby = pstats.SortKey.CUMULATIVE
+        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
+        ps.print_stats()
+        with open("D:/Nik/Projects/mlfmf-data/cProfile-output.txt", "w") as f:
+            print(s.getvalue(), file=f)
+
+        return returned_value
+    
+    return profiled_func

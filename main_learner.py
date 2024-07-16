@@ -16,6 +16,7 @@ import apaa.learning.evaluation as evaluation
 import apaa.learning.recommendation as recommendation
 from apaa.data.structures import KnowledgeGraph
 from apaa.learning.node_embedding import WordFrequencyWeight
+from apaa.helpers.utils import myprofile
 
 Config = tuple[str, dict[str, Any]]
 Configs = list[Config]
@@ -268,12 +269,14 @@ def evaluate_classification_style(
     predictions_recommender: dict[Node, list[tuple[float, Node]]],
     use_recommender_candidates: bool,
 ):
+    skipped_definitions = []
     for edges, true_value in zip([positive_edges, negative_edges], [1, 0]):
         for source, sink, _ in tqdm.tqdm(edges):
             if not agda.Definition.is_normal_definition(sink):
-                LOGGER.warning(
-                    f"Skipping source-sink, since sink ({sink}) is not normal."
-                )
+                skipped_definitions.append(sink)
+                # LOGGER.warning(
+                #     f"Skipping source-sink, since sink ({sink}) is not normal."
+                # )
                 continue
             source_def = defs_for_training[source]
             sink_def = defs_for_training[sink]
@@ -285,6 +288,9 @@ def evaluate_classification_style(
                 source_def, sink_def, nearest_neighbours=candidates
             )
             results_classification[(source, sink)] = (true_value, prediction)
+        LOGGER.warning(
+            f"Skipped {len(skipped_definitions)} source-sinks out of {len(edges)}, because sink is not normal."
+        )
     for true_value, prediction in results_classification.values():
         measures_classification.update(true_value, prediction)
 
@@ -439,6 +445,7 @@ def create_gnn_configs() -> Configs:
                 "node_attributes_file": "D:/Nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/stdlib.tsv",
                 "predict_file": "D:/Nik/Projects/mlfmf-poskusi/data/code2seq/stdlib/predict.c2s",
                 "label2raw_dict_file": "D:/Nik/Projects/mlfmf-poskusi/data/raw/stdlib/dictionaries/label2raw.json",
+                "number_of_epochs": 26000, #TODO
                 "logger": LOGGER,
             },
         )
@@ -562,7 +569,7 @@ def learn_one_group(
             model_type,
             model_args=config,
             actual_k=5,
-            eval_as_recommender=True,
+            eval_as_recommender=True, 
             eval_as_classification=True,
             force=force,
             file_appendix=f"_{i_config}_p_to_keep_{p_def_to_keep}_{name}",
@@ -574,14 +581,14 @@ if __name__ == "__main__":
     utils.clean_temp_files_in_dumps(LOGGER)
     learn_recommender_models(
         "D:/Nik/Projects/mlfmf/stdlib/",  # change this
-        dummy=True,
+        dummy=False,
         bow=False,
         tfidf=False,
         word_embedding=False,
         analogies=False,
-        node_to_vec=False,
+        node_to_vec=True,
         gnn=True,
         p_def_to_keep=0.1,
-        force=False,
+        force=True,
     )
     LOGGER.info("Done")
