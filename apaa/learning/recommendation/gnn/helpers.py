@@ -10,15 +10,32 @@ from sklearn.metrics import roc_auc_score
 
 
 class GraphSAGE(nn.Module):
-    def __init__(self, in_feats, h_feats):
+    """
+    ## Parameters
+    - in_feats: the number of input features
+    - hidden_sizes: list of integeres representing hidden sizes of convolution layers
+    - out_feats: the number of output features
+
+    The first layer has shape [in_feats, hidden_sizes[0]]; the last layer has shape [hidden_sizes[-1], out_feats]. 
+    If hidden_sizes is an empty list, the only layer usedd has shape [in_feats, out_feats].
+        
+    """
+    def __init__(self, in_feats: int, hidden_sizes: list[int], out_feats: int):
         super(GraphSAGE, self).__init__()
-        self.conv1 = dglnn.SAGEConv(in_feats, h_feats, "mean")
-        self.conv2 = dglnn.SAGEConv(h_feats, h_feats, "mean")
+        previous_feats = in_feats
+        self.conv = []
+        for h_feats in hidden_sizes:
+            self.conv.append(dglnn.SAGEConv(previous_feats, h_feats, "mean"))
+            previous_feats = h_feats
+        self.conv.append(dglnn.SAGEConv(previous_feats, out_feats, "mean"))
+        self.conv = nn.ModuleList(self.conv)
+        
 
     def forward(self, g, in_feat):
-        h = self.conv1(g, in_feat)
-        h = torchfn.relu(h)
-        h = self.conv2(g, h)
+        h = in_feat
+        for layer in self.conv:
+            h = layer(g, h)
+            h = torchfn.relu(h)
         return h
 
 

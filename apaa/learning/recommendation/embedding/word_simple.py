@@ -7,7 +7,7 @@ import tqdm
 
 import apaa.data.structures.agda as agda
 import apaa.helpers.types as mytypes
-from apaa.learning.node_embedding.word import BagOfWordsEmbedder, TFIDFEmbedder
+from apaa.learning.recommendation.embedding.node.word import BagOfWordsEmbedder, TFIDFEmbedder
 from apaa.learning.recommendation.base import KNNRecommender
 from apaa.learning.recommendation.embedding.base import \
     KNNNodeEmbeddingRecommender

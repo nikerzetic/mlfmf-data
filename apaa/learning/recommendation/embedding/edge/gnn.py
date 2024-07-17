@@ -5,15 +5,12 @@ from sklearn.ensemble import RandomForestClassifier
 
 import apaa.data.structures.agda as agda
 import apaa.helpers.types as mytypes
-from apaa.learning.recommendation.embedding.node.graph import NodeToVecEmbedding
+import apaa.learning.recommendation.embedding.node.gnn as embedding
 from apaa.learning.recommendation.embedding.edge.base import (
     BaseEdgeEmbeddingRecommender, EdgeEmbeddingScheme)
 
-Node = mytypes.NODE
-array2d = mytypes.ARRAY_2D
 
-
-class Node2VecEdgeEmbeddingRecommender(BaseEdgeEmbeddingRecommender):
+class GNN(BaseEdgeEmbeddingRecommender):
     def __init__(
         self,
         k: Literal["all"] | int = 5,
@@ -21,10 +18,10 @@ class Node2VecEdgeEmbeddingRecommender(BaseEdgeEmbeddingRecommender):
         classifier_kwargs: dict[str, Any] | None = None,
         edge_embedding_scheme: EdgeEmbeddingScheme = EdgeEmbeddingScheme.MEAN,
         edge_file: str | None = None,
-        **node_to_vec_kwargs: Any
+        **gnn_kwargs: Any
     ):
         super().__init__(
-            name="node2vec edge embedding",
+            name="GNN edge embedding",
             k=k,
             predictive_model=BaseEdgeEmbeddingRecommender.create_classifier(
                 classifier, classifier_kwargs
@@ -32,11 +29,11 @@ class Node2VecEdgeEmbeddingRecommender(BaseEdgeEmbeddingRecommender):
             edge_embedding_scheme=edge_embedding_scheme,
             edge_file=edge_file,
         )
-        self.embedder = NodeToVecEmbedding(**node_to_vec_kwargs)
+        self.embedder = embedding.GNN(**gnn_kwargs)
 
     def embed_nodes(
-        self, graph: nx.MultiDiGraph, definitions: Dict[Node, agda.Definition]
-    ) -> Tuple[List[Node], array2d]:
+        self, graph: nx.MultiDiGraph, definitions: Dict[mytypes.NODE, agda.Definition]
+    ) -> Tuple[List[mytypes.NODE], mytypes.ARRAY_2D]:
         self.embedder.fit(graph, definitions)
-        assert self.embedder.node_embeddings is not None
-        return self.embedder.nodes, self.embedder.node_embeddings
+        assert self.node_embeddings is not None
+        return self.embedder.sorted_nodes, self.embedder.node_embeddings

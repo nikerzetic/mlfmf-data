@@ -17,16 +17,15 @@ import apaa.learning.recommendation.gnn.helpers as helpers
 import apaa.helpers.types as mytypes
 import apaa.helpers.utils as utils
 
-from apaa.learning.recommendation.base import BaseRecommender
+from apaa.learning.recommendation.embedding.node.base import NodeEmbeddingBase
 from sklearn.metrics import roc_auc_score
 from apaa.helpers.utils import myprofile
 
 
-class GNN(BaseRecommender):
+class GNN(NodeEmbeddingBase):
 
     def __init__(
         self,
-        k: Literal["all"] | int,
         node_attributes_file: str,
         predict_file: str,
         label2raw_dict_file: str,
@@ -51,6 +50,8 @@ class GNN(BaseRecommender):
         # You can replace DotPredictor with MLPPredictor.
         # self.predictor = MLPPredictor(16)
         self.predictor = helpers.DotPredictor()
+        self.sorted_nodes: list[mytypes.NODE   ]
+        self.node_embeddings: mytypes.ARRAY_2D
         self.network: dgl.DGLGraph
         self.definitions: dict
         self.embeddings: dict
@@ -61,12 +62,12 @@ class GNN(BaseRecommender):
         self.model: helpers.GraphSAGE
         self.curent_predictions: torch.Tensor
 
-    def fit(
+    def embed(
         self,
         graph: nx.MultiDiGraph,
         definitions: Dict[mytypes.NODE, agda.Definition],
         **kwargs: Any,
-    ) -> None:
+    ) -> Tuple[List[mytypes.NODE], mytypes.ARRAY_2D]:
         # The class works on dql.DGLGraph, so we don't keep the original graph as an attribute
         self.definitions = definitions
 
@@ -108,41 +109,9 @@ class GNN(BaseRecommender):
             # node_attrs=["encoded label", "embedding"],
             # edge_attrs=["encoded label"],
         )
-        
 
-    def predict_one(self, node: agda.Definition) -> List[Tuple[float, mytypes.NODE]]:
-        node_id = self.name2id[node.name]
-        #TODO: figure out why evaluation.update sometimes cites node itself as an actual neighbour
-        node_successor_network = dgl.graph(
-            ([float(node_id) for _ in range(self.network.number_of_nodes())], self.network.nodes()), num_nodes=self.network.number_of_nodes()
-        )
-        # node_successor_network = dgl.graph(
-        #     ([float(node_id) for _ in range(self.network.number_of_nodes()-1)], self.network.nodes()[self.network.nodes() != int(node_id)]), num_nodes=self.network.number_of_nodes()
-        # )
-        node_successor_network.edata["score"] = self.predictor(node_successor_network, self.curent_predictions)
+        return self.sorted_nodes, self.curent_predictions.detach().numpy()
     
-        neighbours = [(v.item(), score.item()) for v, score in zip(node_successor_network.edges()[1], node_successor_network.edata["score"])]
-        # neighbours: list = []
-        # for v, score in zip(node_successor_network.edges()[1], node_successor_network.edata["score"]):
-        #     if score > 0.5:
-        #         neighbours.append((v.item(), score.item()))
-        # Sort by score (descending)
-        neighbours.sort(key=lambda x: x[1], reverse=True)
-        return [(score, self.id2name[id]) for id, score in neighbours]
-
-
-    def predict_one_edge(
-        self,
-        example: agda.Definition,
-        other: agda.Definition,
-        nearest_neighbours: List[Tuple[float, mytypes.NODE]] | None = None,
-    ) -> float:
-        example_id = self.name2id[example.name]
-        other_id = self.name2id[other.name]
-
-        return np.dot(
-            self.curent_predictions[example_id].detach().numpy(), self.curent_predictions[other_id].detach().numpy()
-        )
 
     def _encode_node_labels(self, graph: nx.DiGraph):
         """
@@ -218,11 +187,13 @@ class GNN(BaseRecommender):
         )
 
         self.logger.info("...building dictionaries")
+        self.sorted_nodes = []
         # from_networkx relabels nodes in sorted()-ordering, starting at 0
         for name, tensor_id in zip(sorted(graph.nodes), self.network.nodes()):
             id = tensor_id.item()
             self.name2id[name] = id
             self.id2name[id] = name
+            self.sorted_nodes.append(name)
 
         self.logger.info("...translating test pos edges")
         test_pos_edges = []
@@ -381,13 +352,3 @@ class GNN(BaseRecommender):
             #     logger.info(f"In epoch {e}, loss: {loss}")
         
         return model_local, prediction
-
-    def _test(
-        self,
-        test_pos_network: dgl.DGLGraph,
-        test_neg_network: dgl.DGLGraph,
-    ):
-        with torch.no_grad():
-            pos_score = self.predictor(test_pos_network, self.curent_predictions)
-            neg_score = self.predictor(test_neg_network, self.curent_predictions)
-            # print("AUC", helpers.compute_auc(pos_score, neg_score))  # TODO: not print

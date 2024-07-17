@@ -7,7 +7,7 @@ from scipy.spatial import distance as ssd
 import apaa.data.structures.agda as agda
 import apaa.helpers.original as helpers
 import apaa.helpers.types as mytypes
-from apaa.learning.node_embedding.word import (DeepWordEmbedder,
+from apaa.learning.recommendation.embedding.node.word import (DeepWordEmbedder,
                                                WordFrequencyWeight)
 from apaa.learning.recommendation.embedding.base import \
     KNNNodeEmbeddingRecommender

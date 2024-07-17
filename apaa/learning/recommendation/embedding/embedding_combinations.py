@@ -1,8 +1,8 @@
 from typing import Any, Literal
 
 import apaa.helpers.types as mytypes
-from apaa.learning.node_embedding.base import EmbeddingConcatenator
-from apaa.learning.node_embedding.word import (DeepWordEmbedder, TFIDFEmbedder,
+from apaa.learning.recommendation.embedding.node.base import EmbeddingConcatenator
+from apaa.learning.recommendation.embedding.node.word import (DeepWordEmbedder, TFIDFEmbedder,
                                                WordFrequencyWeight)
 from apaa.learning.recommendation.embedding.base import \
     KNNNodeEmbeddingRecommender

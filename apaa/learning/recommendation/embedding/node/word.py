@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 
 import apaa.data.structures.agda as agda
 import apaa.helpers.types as mytypes
-from apaa.learning.node_embedding.base import Node, NodeEmbeddingBase
+from apaa.learning.recommendation.embedding.node.base import Node, NodeEmbeddingBase
 
 array1d = mytypes.ARRAY_1D
 array2d = mytypes.ARRAY_2D

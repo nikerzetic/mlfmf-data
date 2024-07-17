@@ -4,9 +4,9 @@ import networkx as nx
 
 import apaa.data.structures.agda as agda
 import apaa.helpers.types as mytypes
-from apaa.learning.node_embedding.base import EmbeddingConcatenator
-from apaa.learning.node_embedding.graph import NodeToVecEmbedding
-from apaa.learning.node_embedding.word import DeepWordEmbedder, TFIDFEmbedder
+from apaa.learning.recommendation.embedding.node.base import EmbeddingConcatenator
+from apaa.learning.recommendation.embedding.node.graph import NodeToVecEmbedding
+from apaa.learning.recommendation.embedding.node.word import DeepWordEmbedder, TFIDFEmbedder
 from apaa.learning.recommendation.embedding.edge.base import (
     BaseEdgeEmbeddingRecommender, EdgeEmbeddingScheme)
 

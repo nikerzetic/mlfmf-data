@@ -11,8 +11,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 import apaa.data.structures.agda as agda
 import apaa.helpers.original as helpers
 import apaa.helpers.types as mytypes
-from apaa.learning.node_embedding.base import Node, NodeEmbeddingBase, array2d
-from apaa.learning.node_embedding.walk_generation import Walker
+from apaa.learning.recommendation.embedding.node.base import Node, NodeEmbeddingBase, array2d
+from apaa.learning.recommendation.embedding.node.walk_generation import Walker
 
 LOGGER = helpers.create_logger(__file__)
 array1d = mytypes.ARRAY_1D

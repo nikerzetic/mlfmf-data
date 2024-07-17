@@ -15,7 +15,7 @@ import apaa.helpers.types as mytypes
 import apaa.learning.evaluation as evaluation
 import apaa.learning.recommendation as recommendation
 from apaa.data.structures import KnowledgeGraph
-from apaa.learning.node_embedding import WordFrequencyWeight
+from apaa.learning.recommendation.embedding.node import WordFrequencyWeight
 from apaa.helpers.utils import myprofile
 
 Config = tuple[str, dict[str, Any]]
@@ -438,18 +438,25 @@ def create_no_arg_configs() -> Configs:
 
 def create_gnn_configs() -> Configs:
     # TODO: change this
-    return [
-        (
-            "default",
+    configs: Configs = []
+    number_of_epochs = 5000
+    hidden_sizes = [16]
+    out_size = 16
+    for h in hidden_sizes:
+    
+        configs.append(
+            (f"h_size_{h}",
             {
-                "node_attributes_file": "D:/Nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/stdlib.tsv",
-                "predict_file": "D:/Nik/Projects/mlfmf-poskusi/data/code2seq/stdlib/predict.c2s",
-                "label2raw_dict_file": "D:/Nik/Projects/mlfmf-poskusi/data/raw/stdlib/dictionaries/label2raw.json",
-                "number_of_epochs": 26000, #TODO
+                "node_attributes_file": "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/stdlib.tsv",
+                "predict_file": "/home/nik/Projects/mlfmf-poskusi/data/code2seq/stdlib/predict.c2s",
+                "label2raw_dict_file": "/home/nik/Projects/mlfmf-poskusi/data/raw/stdlib/dictionaries/label2raw.json",
+                "number_of_epochs": number_of_epochs,
+                "hidden_sizes": [h],
+                "out_size": out_size,
                 "logger": LOGGER,
-            },
+            })
         )
-    ]
+    return configs
 
 
 def create_node_to_vec_configs() -> Configs:
@@ -580,13 +587,13 @@ def learn_one_group(
 if __name__ == "__main__":
     utils.clean_temp_files_in_dumps(LOGGER)
     learn_recommender_models(
-        "D:/Nik/Projects/mlfmf/stdlib/",  # change this
+        "/home/nik/Projects/mlfmf/stdlib/",  # change this
         dummy=False,
         bow=False,
         tfidf=False,
         word_embedding=False,
         analogies=False,
-        node_to_vec=True,
+        node_to_vec=False,
         gnn=True,
         p_def_to_keep=0.1,
         force=True,

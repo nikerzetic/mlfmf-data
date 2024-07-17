@@ -7,7 +7,7 @@ from sklearn.neighbors import VALID_METRICS
 
 import apaa.data.structures.agda as agda
 import apaa.helpers.types as mytypes
-from apaa.learning.node_embedding.base import NodeEmbeddingBase
+from apaa.learning.recommendation.embedding.node.base import NodeEmbeddingBase
 from apaa.learning.recommendation.base import KNNRecommender
 
 Node = mytypes.NODE
