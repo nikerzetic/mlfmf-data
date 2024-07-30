@@ -439,20 +439,23 @@ def create_no_arg_configs() -> Configs:
 def create_gnn_configs() -> Configs:
     # TODO: change this
     configs: Configs = []
-    number_of_epochs = 5000
-    hidden_sizes = [16]
-    out_size = 16
-    for h in hidden_sizes:
-    
+    numbers_of_epochs = [5000,20000]
+    hidden_sizes = [[16],[32],[16,16]]
+    out_sizes = [16, 32]
+    node_attribute_files = [
+        "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/stdlib.tsv",
+    ]
+    for h, o, attr_file, epochs in itertools.product(hidden_sizes, out_sizes, node_attribute_files, numbers_of_epochs):
+        file_name = os.path.basename(attr_file)[:-4]
         configs.append(
-            (f"h_size_{h}",
+            (f"asts_{file_name}_hidden_{h}_out_{o}_epochs_{epochs}",
             {
-                "node_attributes_file": "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/stdlib.tsv",
+                "node_attributes_file": attr_file,
                 "predict_file": "/home/nik/Projects/mlfmf-poskusi/data/code2seq/stdlib/predict.c2s",
                 "label2raw_dict_file": "/home/nik/Projects/mlfmf-poskusi/data/raw/stdlib/dictionaries/label2raw.json",
-                "number_of_epochs": number_of_epochs,
-                "hidden_sizes": [h],
-                "out_size": out_size,
+                "number_of_epochs": epochs,
+                "hidden_sizes": h,
+                "out_size": o,
                 "logger": LOGGER,
             })
         )
