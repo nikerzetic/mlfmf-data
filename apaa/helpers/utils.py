@@ -4,6 +4,7 @@ import json
 import io
 import pstats
 import cProfile
+import datetime
 
 def clean_temp_files_in_dumps(logger: logging.Logger):
     logger.info("Deleting .temp files ...")
@@ -67,7 +68,10 @@ def read_embeddings(
 
     for embeddings_line, predict_line in zip(embeddings_file, predict_file):
         label = predict_line.split(" ")[0]
-        name = label2raw[label]
+        try:
+            name = label2raw[label]
+        except KeyError:
+            continue
         embedding = embeddings_line.strip("\n").split("\t")[1:]
         embeddings[name] = [float(x) for x in embedding]
         if not embeddings_size:
@@ -91,7 +95,11 @@ def myprofile(func):
         sortby = pstats.SortKey.CUMULATIVE
         ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
         ps.print_stats()
-        with open("D:/Nik/Projects/mlfmf-data/cProfile-output.txt", "w") as f:
+        out_dir = "cProfile-outputs"
+        os.makedirs(out_dir, exist_ok=True)
+        now = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M")
+        out_file = os.path.join(out_dir, f"{now}.txt")
+        with open(out_file, "w") as f:
             print(s.getvalue(), file=f)
 
         return returned_value

@@ -185,7 +185,7 @@ class QualityMeasureClassification:
         self.true_values = []
         self.predicted_values = []
         if thresholds == "default":
-            thresholds = [0.5, 0.1, 0.25, 0.75, 0.9]
+            thresholds = [0.1, 0.25, 0.5, 0.75, 0.9]
         self.theta = [thresholds] if isinstance(thresholds, float) else thresholds
         self.zd = zero_division
 

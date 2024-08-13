@@ -187,6 +187,8 @@ def learn(
     return True, model, t_learn, will_learn
 
 
+# TODO: this function is very very slow - fix that
+# @myprofile
 def predict_and_evaluate(
     kg: nx.MultiDiGraph,
     train_graph: nx.MultiDiGraph,
@@ -250,7 +252,9 @@ def evaluate_recommender_style(
     predictions_recommender: dict[Node, list[tuple[float, Node]]],
     actual_k: int,
 ):
-    for name, definition in tqdm.tqdm(test_defs.items()):
+    for name, definition in tqdm.tqdm(
+        test_defs.items()
+    ):  # TODO: this loop is the slow one
         neighbours: list[tuple[float, Node]] = model.predict(definition)
         _, true_neighbours = measures_recommender.update(name, neighbours)
         actual_neighbours_recommender[name] = true_neighbours
@@ -439,25 +443,47 @@ def create_no_arg_configs() -> Configs:
 def create_gnn_configs() -> Configs:
     # TODO: change this
     configs: Configs = []
-    numbers_of_epochs = [5000,20000]
-    hidden_sizes = [[16],[32],[16,16]]
-    out_sizes = [16, 32]
-    node_attribute_files = [
-        "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/stdlib.tsv",
+    numbers_of_epochs = [
+        # 5000,
+        20000,
     ]
-    for h, o, attr_file, epochs in itertools.product(hidden_sizes, out_sizes, node_attribute_files, numbers_of_epochs):
+    hidden_sizes = [
+        # [16],
+        # [32],
+        # [16, 16],
+        # [32, 32],
+        # [32, 32, 32],
+        [64],
+        [64,64],
+    ]
+    out_sizes = [
+        # 16,
+        # 32,
+        64
+    ]
+    node_attribute_files = [
+        "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_16.tsv",
+        "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_32.tsv",
+        "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_64.tsv",
+        "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_128.tsv",
+    ]
+    for h, o, attr_file, epochs in itertools.product(
+        hidden_sizes, out_sizes, node_attribute_files, numbers_of_epochs
+    ):
         file_name = os.path.basename(attr_file)[:-4]
         configs.append(
-            (f"asts_{file_name}_hidden_{h}_out_{o}_epochs_{epochs}",
-            {
-                "node_attributes_file": attr_file,
-                "predict_file": "/home/nik/Projects/mlfmf-poskusi/data/code2seq/stdlib/predict.c2s",
-                "label2raw_dict_file": "/home/nik/Projects/mlfmf-poskusi/data/raw/stdlib/dictionaries/label2raw.json",
-                "number_of_epochs": epochs,
-                "hidden_sizes": h,
-                "out_size": o,
-                "logger": LOGGER,
-            })
+            (
+                f"asts_{file_name}_hidden_{h}_out_{o}_epochs_{epochs}",
+                {
+                    "node_attributes_file": attr_file,
+                    "predict_file": "/home/nik/Projects/mlfmf-poskusi/data/code2seq/agda/predict.c2s",
+                    "label2raw_dict_file": "/home/nik/Projects/mlfmf-poskusi/data/raw/stdlib/dictionaries/label2raw.json",
+                    "number_of_epochs": epochs,
+                    "hidden_sizes": h,
+                    "out_size": o,
+                    "logger": LOGGER,
+                },
+            )
         )
     return configs
 
@@ -579,10 +605,11 @@ def learn_one_group(
             model_type,
             model_args=config,
             actual_k=5,
-            eval_as_recommender=True, 
+            eval_as_recommender=True,
             eval_as_classification=True,
             force=force,
-            file_appendix=f"_{i_config}_p_to_keep_{p_def_to_keep}_{name}",
+            file_appendix=f"_p_to_keep_{p_def_to_keep}_{name}",
+            # file_appendix=f"_{i_config}_p_to_keep_{p_def_to_keep}_{name}",
         )
         gc.collect()
 
@@ -599,6 +626,6 @@ if __name__ == "__main__":
         node_to_vec=False,
         gnn=True,
         p_def_to_keep=0.1,
-        force=True,
+        force=False,
     )
     LOGGER.info("Done")
