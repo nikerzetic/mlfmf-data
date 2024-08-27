@@ -10,3 +10,4 @@ from .embedding.word_vectors import (EmbeddingAnalogiesRecommender,
                                      WordEmbeddingRecommender)
 from .two_hops import EdgeWeightScheme, NodeWeightScheme, TwoHops
 from .embedding.edge.gnn import GNN
+from .embedding.edge.code2seq import Code2Seq

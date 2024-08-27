@@ -353,6 +353,7 @@ def learn_recommender_models(
     word_embedding: bool = True,
     analogies: bool = True,
     node_to_vec: bool = True,
+    code2seq: bool = True,
     gnn: bool = True,
     p_def_to_keep: float = 0.0,
     force: bool = False,
@@ -427,6 +428,17 @@ def learn_recommender_models(
             node_to_vec_configs,
             force,
         )
+    if code2seq:
+        LOGGER.info("Code to sequence...")
+        code2seq_configs = create_code2seq_configs()
+        learn_one_group(
+            recommendation.Code2Seq,
+            library_path,
+            dataset,
+            p_def_to_keep,
+            code2seq_configs,
+            force,
+        )
     if gnn:
         LOGGER.info("Grarph neural network ...")
         gnn_configs = create_gnn_configs()
@@ -440,6 +452,30 @@ def create_no_arg_configs() -> Configs:
     return [("empty", {})]
 
 
+def create_code2seq_configs() -> Configs:
+    configs: Configs = []
+    node_attribute_files = [
+        "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_16.tsv",
+        "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_32.tsv",
+        "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_64.tsv",
+        "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_128.tsv",
+    ]
+    for file in node_attribute_files:
+        file_name = os.path.basename(file)[:-4]
+        configs.append(
+            (
+                f"asts_{file_name}",
+                {
+                    "node_attributes_file": file,
+                    "predict_file": "/home/nik/Projects/mlfmf-poskusi/data/code2seq/agda/predict.c2s",
+                    "label2raw_dict_file": "/home/nik/Projects/mlfmf-poskusi/data/raw/stdlib/dictionaries/label2raw.json",
+                    "logger": LOGGER,
+                },
+            )
+        )
+    return configs
+
+
 def create_gnn_configs() -> Configs:
     # TODO: change this
     configs: Configs = []
@@ -449,28 +485,37 @@ def create_gnn_configs() -> Configs:
     ]
     hidden_sizes = [
         # [16],
-        # [32],
         # [16, 16],
-        # [32, 32],
-        # [32, 32, 32],
-        [64],
-        [64,64],
+        [32],
+        [32, 32],
+        [32, 32, 32],
+        [32, 32, 32, 32],
+        [32, 32, 32, 32, 32],
+        [32, 32, 32, 32, 32, 32],
+        [32, 32, 32, 32, 32, 32, 32],
+        # [64],
+        # [64, 64],
+        # [64, 64, 64],
     ]
     out_sizes = [
         # 16,
-        # 32,
-        64
+        32,
+        # 64
     ]
     node_attribute_files = [
         "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_16.tsv",
         "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_32.tsv",
         "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_64.tsv",
         "/home/nik/Projects/mlfmf-poskusi/data/embeddings/code2seq/agda_128.tsv",
+        # None,
     ]
     for h, o, attr_file, epochs in itertools.product(
         hidden_sizes, out_sizes, node_attribute_files, numbers_of_epochs
     ):
-        file_name = os.path.basename(attr_file)[:-4]
+        if attr_file:
+            file_name = os.path.basename(attr_file)[:-4]
+        else:
+            file_name = "agda_0"
         configs.append(
             (
                 f"asts_{file_name}_hidden_{h}_out_{o}_epochs_{epochs}",
@@ -624,6 +669,7 @@ if __name__ == "__main__":
         word_embedding=False,
         analogies=False,
         node_to_vec=False,
+        code2seq=False,
         gnn=True,
         p_def_to_keep=0.1,
         force=False,
